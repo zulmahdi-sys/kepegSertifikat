@@ -473,7 +473,7 @@
             </div>
 
             <div id="adminTabSettings" class="glass-card rounded-3xl p-8 shadow-xl border border-slate-200 space-y-6 hidden max-w-2xl">
-                <h3 class="font-black text-slate-900 text-base">Pengaturan Sistem, Bobot Poin & Deadline</h3>
+                <h3 class="font-black text-slate-900 text-base">Pengaturan Sistem, Google Apps Script & Bobot Poin</h3>
                 <div class="space-y-5">
                     <div class="flex items-center justify-between p-5 bg-slate-50 rounded-2xl border border-slate-200">
                         <div>
@@ -484,6 +484,10 @@
                             <input type="checkbox" id="togglePendaftaran" onchange="toggleSystemStatus(this)" class="sr-only peer">
                             <div class="w-12 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
                         </label>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-2">Google Apps Script Web App URL (Sinkron Spreadsheet & Drive)</label>
+                        <input type="text" id="gasUrlInput" placeholder="https://script.google.com/macros/s/.../exec" class="w-full px-4 py-3 rounded-2xl border border-slate-200 text-xs focus:ring-2 focus:ring-emerald-500 bg-slate-50 font-mono">
                     </div>
                     <div>
                         <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-2">Ubah Tenggat Waktu Deadline</label>
@@ -917,8 +921,8 @@
                                 <th class="p-2.5 border border-slate-300 text-center">No</th>
                                 <th class="p-2.5 border border-slate-300">NIP & Nama Pegawai</th>
                                 <th class="p-2.5 border border-slate-300">Jabatan & Unit Kerja</th>
-                                <th class="p-2.5 border border-slate-300">Nama / Jenis Sertifikat</th>
-                                <th class="p-2.5 border border-slate-300 text-center">Bobot / Akumulasi</th>
+                                <th class="p-2.5 border border-slate-300">Nama / Jenis Sertifikat & Bobot</th>
+                                <th class="p-2.5 border border-slate-300 text-center">Akumulasi Skor</th>
                                 <th class="p-2.5 border border-slate-300 text-center">Status</th>
                             </tr>
                         </thead>
@@ -1011,7 +1015,7 @@
     <script>
         lucide.createIcons();
 
-        const GAS_WEB_APP_URL = localStorage.getItem('uin_gas_url') || '';
+        let GAS_WEB_APP_URL = localStorage.getItem('uin_gas_url') || '';
 
         const SUPABASE_URL = 'https://nlqelocaekuskgibqvis.supabase.co';
         const SUPABASE_KEY = 'sb_publishable__0eDpFEwNy5_V0SU_K8fUA_FYar-zL6';
@@ -1068,7 +1072,7 @@
                         id: c.id, nip: c.nip, namaPegawai: c.nama_pegawai, unitKerja: c.unit_kerja,
                         kategori: c.kategori, tingkat: c.tingkat, namaSertifikat: c.nama_sertifikat,
                         instansiPenerbit: c.instansi_penerbit, jumlahJp: c.jumlah_jp, tahun: c.tahun,
-                        fileData: c.file_data, isVerified: c.is_verified,
+                        fileData: c.file_data, fileUrl: c.file_url || '', isVerified: c.is_verified,
                         createdAt: c.created_at ? new Date(c.created_at).toLocaleDateString('id-ID') : '22 Oktober 2026'
                     }));
                     localStorage.setItem('uin_certs', JSON.stringify(certificates));
@@ -1247,11 +1251,12 @@
                 } catch (err) { console.warn("Supabase insert user error:", err); }
             }
 
-            // Sync ke Google Spreadsheet & Apps Script
+            // Sync ke Google Spreadsheet & Apps Script (CORS safe no-cors)
             if (GAS_WEB_APP_URL) {
                 try {
                     await fetch(GAS_WEB_APP_URL, {
                         method: 'POST',
+                        mode: 'no-cors',
                         body: JSON.stringify({ action: 'register_pegawai', nip, nama, email, phone, statusAsn, jabatan, unitKerja, password })
                     });
                 } catch (err) { console.warn("GAS register sync error:", err); }
@@ -1505,14 +1510,10 @@
 
                     let certsHtml = uCerts.length === 0 ? '<span class="text-[11px] text-slate-400 italic">Belum ada berkas</span>' : uCerts.map(c => `
                         <div class="mb-1.5 pb-1 border-b border-slate-100 last:border-0">
-                            <div class="font-extrabold text-slate-900">${c.namaSertifikat}</div>
+                            <div class="font-extrabold text-slate-900">${c.namaSertifikat} <span class="text-emerald-700 font-bold">(+${getScoreByLevel(c.tingkat || 'Nasional')} Poin)</span></div>
                             <div class="text-[10px] text-slate-500">${c.kategori} (${c.tingkat || 'Nasional'}) &bull; ${c.instansiPenerbit || '-'}</div>
                         </div>
                     `).join('');
-
-                    let weightsHtml = uCerts.length === 0 ? '<span class="text-[11px] text-slate-400">0 Poin</span>' : uCerts.map(c => `
-                        <div class="mb-1.5 pb-1 border-b border-slate-100 last:border-0 font-bold text-emerald-800">+${getScoreByLevel(c.tingkat || 'Nasional')} Poin</div>
-                    `).join('') + `<div class="mt-1 pt-1 border-t border-slate-300 font-black text-emerald-900 text-xs">Total: ${score} Poin</div>`;
 
                     return `
                         <tr class="align-top">
@@ -1520,7 +1521,7 @@
                             <td class="p-2.5 border border-slate-300"><div class="font-extrabold text-slate-900">${u.nama}</div><div class="text-[10px] text-slate-500">NIP: ${u.nip}</div></td>
                             <td class="p-2.5 border border-slate-300"><div class="font-bold">${u.jabatan}</div><div class="text-[10px] text-slate-500">${u.unitKerja}</div></td>
                             <td class="p-2.5 border border-slate-300">${certsHtml}</td>
-                            <td class="p-2.5 border border-slate-300 text-center">${weightsHtml}</td>
+                            <td class="p-2.5 border border-slate-300 text-center font-black text-emerald-900">${score} Poin</td>
                             <td class="p-2.5 border border-slate-300 text-center align-middle"><span class="${isComplete ? 'text-emerald-700 font-extrabold' : 'text-amber-600 font-bold'} text-[10px]">${isComplete ? 'LENGKAP' : 'BELUM'}</span></td>
                         </tr>
                     `;
@@ -1588,26 +1589,29 @@
                     const newCert = {
                         id: certId, nip: currentUser.nip, namaPegawai: currentUser.nama, unitKerja: currentUser.unitKerja,
                         kategori, tingkat, namaSertifikat, instansiPenerbit, jumlahJp: jumlahJp || '-', tahun,
-                        fileName: file.name, fileData: fileBase64, createdAt: new Date().toLocaleDateString('id-ID'), isVerified: false
+                        fileName: file.name, fileData: fileBase64, fileUrl: '', createdAt: new Date().toLocaleDateString('id-ID'), isVerified: false
                     };
 
                     certificates.push(newCert);
                     localStorage.setItem('uin_certs', JSON.stringify(certificates));
 
+                    // Simpan ke Supabase
                     if (supabaseClient) {
                         try {
                             await supabaseClient.from('sertifikat').insert([{
                                 id: certId, nip: currentUser.nip, nama_pegawai: currentUser.nama, unit_kerja: currentUser.unitKerja,
                                 kategori, tingkat, nama_sertifikat: namaSertifikat, instansi_penerbit: instansiPenerbit,
-                                jumlah_jp: jumlahJp || '-', tahun, file_data: fileBase64, is_verified: false
+                                jumlah_jp: jumlahJp || '-', tahun, file_data: fileBase64, file_url: '', is_verified: false
                             }]);
                         } catch(e) { console.warn("Supabase upload error:", e); }
                     }
 
+                    // Sync ke Google Apps Script (Spreadsheet & Drive) dengan no-cors agar tidak error
                     if (GAS_WEB_APP_URL) {
                         try {
                             await fetch(GAS_WEB_APP_URL, {
                                 method: 'POST',
+                                mode: 'no-cors',
                                 body: JSON.stringify({
                                     action: 'upload_certificate',
                                     id: certId,
@@ -1631,10 +1635,35 @@
                     closeUploadModal();
                     showDashboard();
                     updateSystemState();
-                    showAlert('Berhasil', `Dokumen PDF/JPG berhasil diunggah ke Google Drive dan tersinkron ke Spreadsheet. Bobot +${getScoreByLevel(tingkat)} poin.`, 'success');
+                    showAlert('Berhasil', `Dokumen PDF/JPG berhasil diunggah ke Google Drive & tersinkron ke Spreadsheet. Bobot +${getScoreByLevel(tingkat)} poin.`, 'success');
                 } catch (err) { showAlert('Gagal', 'Kesalahan penyimpanan file.', 'error'); }
             };
             reader.readAsDataURL(file);
+        }
+
+        // Preview file helper to prevent blank screen in Chrome
+        function previewCertificate(fileUrl, fileData) {
+            if (fileUrl && fileUrl.startsWith('http')) {
+                window.open(fileUrl, '_blank');
+                return;
+            }
+            if (fileData) {
+                try {
+                    const arr = fileData.split(',');
+                    const mime = arr[0].match(/:(.*?);/)[1];
+                    const bstr = atob(arr[1]);
+                    let n = bstr.length;
+                    const u8arr = new Uint8Array(n);
+                    while(n--) { u8arr[n] = bstr.charCodeAt(n); }
+                    const blob = new Blob([u8arr], {type: mime});
+                    const blobUrl = URL.createObjectURL(blob);
+                    window.open(blobUrl, '_blank');
+                } catch(e) {
+                    window.open(fileData, '_blank');
+                }
+            } else {
+                showAlert('Informasi', 'File dokumen tidak tersedia.', 'error');
+            }
         }
 
         function renderCertificates() {
@@ -1670,8 +1699,8 @@
                             <p class="text-[11px] text-slate-500 font-medium">Instansi: <strong>${c.instansiPenerbit || '-'}</strong> &bull; Tahun: ${c.tahun}</p>
                         </div>
                         <div class="flex items-center gap-2 flex-shrink-0">
-                            <a href="${c.fileData}" target="_blank" class="bg-emerald-50 text-emerald-700 hover:bg-emerald-100 p-2.5 rounded-xl text-xs font-bold flex items-center gap-1 border border-emerald-200"><i data-lucide="eye" class="w-4 h-4"></i></a>
-                            ${!c.isVerified ? `<button onclick="deleteCert('${c.id}')" class="bg-red-50 text-red-600 hover:bg-red-100 p-2.5 rounded-xl text-xs font-bold border border-red-200"><i data-lucide="trash-2" class="w-4 h-4"></i></button>` : ''}
+                            <button onclick="previewCertificate('${c.fileUrl || ''}', '${c.fileData || ''}')" class="bg-emerald-50 text-emerald-700 hover:bg-emerald-100 p-2.5 rounded-xl text-xs font-bold flex items-center gap-1 border border-emerald-200" title="Pratinjau File"><i data-lucide="eye" class="w-4 h-4"></i></button>
+                            ${!c.isVerified ? `<button onclick="deleteCert('${c.id}')" class="bg-red-50 text-red-600 hover:bg-red-100 p-2.5 rounded-xl text-xs font-bold border border-red-200" title="Hapus"><i data-lucide="trash-2" class="w-4 h-4"></i></button>` : ''}
                         </div>
                     </div>
                 `).join('');
@@ -1694,7 +1723,7 @@
                             <h4 class="font-extrabold text-slate-900 text-xs truncate mt-1">${c.namaSertifikat}</h4>
                             <p class="text-[10px] text-slate-500">${c.instansiPenerbit || '-'}</p>
                         </div>
-                        <a href="${c.fileData}" target="_blank" class="bg-emerald-600 hover:bg-emerald-700 text-white p-2.5 rounded-xl text-xs font-bold flex items-center gap-1 flex-shrink-0 shadow"><i data-lucide="file-check" class="w-4 h-4"></i> Arsip</a>
+                        <button onclick="previewCertificate('${c.fileUrl || ''}', '${c.fileData || ''}')" class="bg-emerald-600 hover:bg-emerald-700 text-white p-2.5 rounded-xl text-xs font-bold flex items-center gap-1 flex-shrink-0 shadow"><i data-lucide="file-check" class="w-4 h-4"></i> Arsip</button>
                     </div>
                 `).join('');
             }
@@ -1744,6 +1773,7 @@
             document.getElementById('adminDashboardSection').classList.remove('hidden');
 
             document.getElementById('togglePendaftaran').checked = systemSettings.isOpen;
+            document.getElementById('gasUrlInput').value = GAS_WEB_APP_URL || '';
             document.getElementById('deadlineInput').value = systemSettings.deadline;
             document.getElementById('portfolioTextInput').value = systemSettings.portfolioText || '';
             document.getElementById('runningTextInput').value = systemSettings.runningText || '';
@@ -1990,7 +2020,7 @@
                     <td class="p-3.5"><span class="bg-emerald-100 text-emerald-800 font-bold px-2.5 py-0.5 rounded-full text-[10px]">${c.kategori} (${c.tingkat})</span></td>
                     <td class="p-3.5"><div class="font-extrabold text-slate-900">${c.namaSertifikat}</div><div class="text-[10px] text-slate-500">${c.instansiPenerbit || '-'}</div></td>
                     <td class="p-3.5 text-center">${c.tahun}</td>
-                    <td class="p-3.5 text-center"><a href="${c.fileData}" target="_blank" class="bg-emerald-50 text-emerald-700 px-3 py-1.5 rounded-xl font-bold text-xs border border-emerald-200">Drive</a></td>
+                    <td class="p-3.5 text-center"><button onclick="previewCertificate('${c.fileUrl || ''}', '${c.fileData || ''}')" class="bg-emerald-50 text-emerald-700 px-3 py-1.5 rounded-xl font-bold text-xs border border-emerald-200">Drive</button></td>
                 </tr>
             `).join('');
             lucide.createIcons();
@@ -2019,7 +2049,7 @@
                                         <p class="text-[11px] text-slate-500">Instansi: ${c.instansiPenerbit || '-'}</p>
                                     </div>
                                     <div class="flex items-center gap-2">
-                                        <a href="${c.fileData}" target="_blank" class="bg-emerald-50 text-emerald-700 px-3 py-2 rounded-xl font-bold text-xs border border-emerald-200">Lihat Drive</a>
+                                        <button onclick="previewCertificate('${c.fileUrl || ''}', '${c.fileData || ''}')" class="bg-emerald-50 text-emerald-700 px-3 py-2 rounded-xl font-bold text-xs border border-emerald-200">Lihat Drive</button>
                                         <button onclick="toggleVerifyCert('${c.id}', '${nip}')" class="${c.isVerified ? 'bg-amber-100 text-amber-900' : 'bg-emerald-700 text-white'} px-4 py-2 rounded-xl font-bold text-xs">${c.isVerified ? 'Batalkan' : 'Verifikasi'}</button>
                                     </div>
                                 </div>
@@ -2062,8 +2092,13 @@
             const dVal = document.getElementById('deadlineInput').value;
             const pText = document.getElementById('portfolioTextInput').value.trim();
             const rText = document.getElementById('runningTextInput').value.trim();
+            const gUrl = document.getElementById('gasUrlInput').value.trim();
             if (dVal) systemSettings.deadline = dVal;
             if (pText) systemSettings.portfolioText = pText;
+            if (gUrl) {
+                GAS_WEB_APP_URL = gUrl;
+                localStorage.setItem('uin_gas_url', gUrl);
+            }
             if (rText) {
                 systemSettings.runningText = rText;
                 document.getElementById('runningTextDisplay').innerText = rText;

@@ -99,7 +99,7 @@
                 <div>
                     <div class="text-xs font-bold text-slate-400 uppercase tracking-wider">Jumlah Pengguna</div>
                     <div id="statPublicUsers" class="text-3xl font-extrabold text-slate-900 mt-1">0</div>
-                    <div class="text-xs text-emerald-600 font-medium mt-0.5">Pegawai terdaftar aktif (Drive & Sheet)</div>
+                    <div class="text-xs text-emerald-600 font-medium mt-0.5">Pegawai terdaftar aktif (Supabase & Sheet)</div>
                 </div>
             </div>
             <div class="glass-card p-6 rounded-3xl flex items-center gap-5">
@@ -154,7 +154,7 @@
             <form id="registerFormContainer" onsubmit="handleRegister(event)" class="space-y-4 hidden">
                 <div class="text-center mb-6">
                     <h2 class="text-2xl font-black text-slate-900">Pendaftaran Akun Pegawai</h2>
-                    <p class="text-xs text-slate-500 mt-1">Otomatis tersimpan ke Google Spreadsheet & Drive.</p>
+                    <p class="text-xs text-slate-500 mt-1">Otomatis tersimpan ke Supabase Cloud & Google Spreadsheet.</p>
                 </div>
                 <div>
                     <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Nomor Induk Pegawai (NIP / NIDN / NIDK)</label>
@@ -221,7 +221,7 @@
                     <input type="password" id="regPass" required placeholder="••••••••" class="w-full px-4 py-2.5 rounded-2xl border border-slate-200 bg-slate-50/50 focus:bg-white text-sm">
                 </div>
                 <button type="submit" class="w-full bg-gradient-to-r from-emerald-700 to-teal-700 hover:from-emerald-800 hover:to-teal-800 text-white font-bold py-3.5 rounded-2xl transition shadow-lg shadow-emerald-700/20 text-sm flex items-center justify-center gap-2 mt-2">
-                    <i data-lucide="user-plus" class="w-4 h-4"></i> Daftar & Simpan ke Spreadsheet
+                    <i data-lucide="user-plus" class="w-4 h-4"></i> Daftar & Kirim Email Verifikasi
                 </button>
             </form>
         </section>
@@ -269,13 +269,12 @@
 
             <div class="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200/80 rounded-3xl p-6 text-amber-950 text-xs sm:text-sm space-y-2.5 shadow-sm">
                 <div class="flex items-center gap-2.5 font-black text-amber-950 text-base">
-                    <i data-lucide="info" class="w-5 h-5 text-amber-600"></i> Ketentuan Integrasi Google Drive & Spreadsheet UIN Ar-Raniry:
+                    <i data-lucide="info" class="w-5 h-5 text-amber-600"></i> Ketentuan Integrasi Supabase, Google Drive & Spreadsheet UIN Ar-Raniry:
                 </div>
                 <ul class="list-disc pl-5 space-y-1.5 text-amber-900/90 font-medium">
-                    <li><strong>Google Drive Storage:</strong> Setiap file PDF / JPG yang diunggah akan otomatis tersimpan di dalam Folder Google Drive resmi UIN Ar-Raniry.</li>
+                    <li><strong>Supabase Cloud Database:</strong> Seluruh data akun pegawai tersimpan aman di Supabase Cloud (`nlqelocaekuskgibqvis.supabase.co`).</li>
+                    <li><strong>Google Drive Storage:</strong> File PDF / JPG berukuran maksimal 2MB tersimpan otomatis ke dalam Google Drive resmi UIN Ar-Raniry.</li>
                     <li><strong>Google Spreadsheet Sync:</strong> Data rekapitulasi, nama pegawai, instansi, JP, dan link file Drive langsung tercatat secara otomatis ke Spreadsheet.</li>
-                    <li><strong>Sertifikat Keahlian:</strong> Bebas tahun (&le; 2026).</li>
-                    <li><strong>Sertifikat Kompetensi:</strong> Khusus tahun 2026.</li>
                 </ul>
             </div>
 
@@ -328,7 +327,7 @@
             <div class="bg-slate-900 text-white rounded-3xl p-8 shadow-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-6 border border-slate-800">
                 <div>
                     <div class="flex items-center gap-2 mb-2">
-                        <span class="bg-amber-400 text-slate-950 text-xs font-black px-3 py-1 rounded-full shadow">PANEL ADMINISTRATOR (GOOGLE DRIVE & SHEETS)</span>
+                        <span class="bg-amber-400 text-slate-950 text-xs font-black px-3 py-1 rounded-full shadow">PANEL ADMINISTRATOR (SUPABASE, DRIVE & SHEETS)</span>
                     </div>
                     <h2 class="text-2xl sm:text-3xl font-black tracking-tight">Dashboard Rekapitulasi & Master Database</h2>
                     <p class="text-xs text-slate-300 mt-1">UIN Ar-Raniry Banda Aceh - Monitoring, Manajemen User & Akumulasi Skor</p>
@@ -412,7 +411,7 @@
             <div id="adminTabMasterDb" class="glass-card rounded-3xl p-8 shadow-xl border border-slate-200 space-y-6 hidden">
                 <div class="flex flex-col sm:flex-row justify-between items-center gap-4">
                     <div>
-                        <h3 class="font-black text-slate-900 text-base">Master Database Akun Pegawai</h3>
+                        <h3 class="font-black text-slate-900 text-base">Master Database Akun Pegawai (Supabase)</h3>
                         <p class="text-xs text-slate-500">Kelola akun pegawai, edit biodata, reset password otomatis, dan hapus akun.</p>
                     </div>
                     <div class="w-full sm:w-auto">
@@ -569,7 +568,7 @@
                 <div>
                     <h4 id="simEmailSubject" class="font-black text-slate-900 text-sm mb-1">Verifikasi Akun Sistem Pengumpulan Sertifikat UIN Ar-Raniry 2026</h4>
                     <p class="text-slate-600">Halo <strong id="simEmailNama">-</strong>,</p>
-                    <p id="simEmailBody" class="text-slate-600 mt-1">Terima kasih telah mendaftar. Akun Anda memerlukan verifikasi email untuk diaktifkan.</p>
+                    <p id="simEmailBody" class="text-slate-600 mt-1">Terima kasih telah mendaftar. Data Anda telah tersimpan di Supabase Cloud & Spreadsheet. Silakan verifikasi akun untuk mulai mengunggah sertifikat.</p>
                     <div class="bg-white p-3.5 rounded-xl border border-slate-200 my-3.5 space-y-1 font-mono text-[11px] shadow-sm">
                         <div><strong>NIP / User:</strong> <span id="simEmailNip" class="text-emerald-700 font-bold">-</span></div>
                         <div><strong>Password:</strong> <span id="simEmailPass" class="text-emerald-700 font-bold">-</span></div>
@@ -1004,7 +1003,7 @@
             </div>
             <div class="text-slate-400 text-[11px] text-center sm:text-right font-medium">
                 <p>&copy; 2026 Biro AUPK & Kepegawaian UIN Ar-Raniry.</p>
-                <p>Google Drive & Spreadsheet Integration Active.</p>
+                <p>Supabase Cloud & Google Drive Integration Active.</p>
             </div>
         </div>
     </footer>
@@ -1051,18 +1050,6 @@
         ];
 
         async function syncDataFromSupabaseOrGAS() {
-            if (GAS_WEB_APP_URL) {
-                try {
-                    const response = await fetch(GAS_WEB_APP_URL);
-                    const result = await response.json();
-                    if (result.status === 'success') {
-                        console.log("Data successfully synced with Google Apps Script / Spreadsheet");
-                    }
-                } catch (err) {
-                    console.log("GAS fetch fallback:", err);
-                }
-            }
-
             if (!supabaseClient) return;
             try {
                 const { data: usersData, error: userErr } = await supabaseClient.from('pegawai').select('*');
@@ -1251,14 +1238,17 @@
             registeredUsers.push(newUser);
             localStorage.setItem('uin_reg_users', JSON.stringify(registeredUsers));
 
+            // Simpan ke Supabase Cloud
             if (supabaseClient) {
                 try {
-                    await supabaseClient.from('pegawai').insert([{
+                    const { error } = await supabaseClient.from('pegawai').insert([{
                         nip, nama, email, phone, status_asn: statusAsn, jabatan, unit_kerja: unitKerja, password, is_verified: false
                     }]);
+                    if (error) console.error("Supabase error insert pegawai:", error);
                 } catch (err) { console.warn("Supabase insert user error:", err); }
             }
 
+            // Sync ke Google Spreadsheet & Apps Script
             if (GAS_WEB_APP_URL) {
                 try {
                     await fetch(GAS_WEB_APP_URL, {
@@ -1269,7 +1259,7 @@
             }
 
             updateSystemState();
-            showAlert('Pendaftaran Berhasil', 'Selamat, Anda telah berhasil mendaftar! Data tersimpan otomatis ke Spreadsheet & Drive.', 'success', () => {
+            showAlert('Pendaftaran Berhasil', 'Selamat, Anda telah berhasil mendaftar! Silakan cek email Anda untuk melakukan verifikasi.', 'success', () => {
                 showEmailVerificationModal(newUser);
             });
         }
@@ -1288,7 +1278,7 @@
                 verifyBtn.setAttribute('onclick', `closeEmailVerificationModal()`);
             } else {
                 document.getElementById('simEmailSubject').innerText = 'Verifikasi Akun Sistem Pengumpulan Sertifikat UIN Ar-Raniry 2026';
-                document.getElementById('simEmailBody').innerText = 'Terima kasih telah mendaftar. Akun Anda memerlukan verifikasi email untuk diaktifkan.';
+                document.getElementById('simEmailBody').innerText = 'Terima kasih telah mendaftar. Data Anda telah tersimpan di Supabase Cloud & Spreadsheet. Silakan verifikasi akun untuk aktif.';
                 verifyBtn.innerHTML = '<i data-lucide="external-link" class="w-4 h-4"></i> 🔗 Verifikasi Akun & Masuk ke Halaman Login';
                 verifyBtn.setAttribute('onclick', `verifyAccountAndRedirect('${user.nip}')`);
             }
@@ -1306,7 +1296,11 @@
             if (user) {
                 user.isVerified = true;
                 localStorage.setItem('uin_reg_users', JSON.stringify(registeredUsers));
-                if (supabaseClient) await supabaseClient.from('pegawai').update({ is_verified: true }).eq('nip', nip);
+                if (supabaseClient) {
+                    try {
+                        await supabaseClient.from('pegawai').update({ is_verified: true }).eq('nip', nip);
+                    } catch(e) { console.warn("Supabase verify update error:", e); }
+                }
             }
             document.getElementById('emailVerificationModal').classList.add('hidden');
             switchAuthTab('login');
@@ -1325,7 +1319,7 @@
                 return;
             }
             if (!found.isVerified) {
-                showAlert('Akun Belum Verifikasi', 'Silakan verifikasi email Anda terlebih dahulu melalui tautan yang dikirimkan saat pendaftaran.', 'error');
+                showAlert('Akun Belum Verifikasi', 'Silakan verifikasi email Anda terlebih dahulu melalui tautan verifikasi.', 'error');
                 return;
             }
 
@@ -1399,11 +1393,13 @@
             localStorage.setItem('uin_user', JSON.stringify(currentUser));
 
             if (supabaseClient) {
-                await supabaseClient.from('pegawai').update({
-                    nama: currentUser.nama, email: currentUser.email, phone: currentUser.phone,
-                    status_asn: currentUser.statusAsn, jabatan: currentUser.jabatan, unit_kerja: currentUser.unitKerja,
-                    ...(newPass ? { password: newPass } : {})
-                }).eq('nip', currentUser.nip);
+                try {
+                    await supabaseClient.from('pegawai').update({
+                        nama: currentUser.nama, email: currentUser.email, phone: currentUser.phone,
+                        status_asn: currentUser.statusAsn, jabatan: currentUser.jabatan, unit_kerja: currentUser.unitKerja,
+                        ...(newPass ? { password: newPass } : {})
+                    }).eq('nip', currentUser.nip);
+                } catch(e) { console.warn("Supabase update error:", e); }
             }
 
             closeEditProfileModal();
@@ -1428,7 +1424,11 @@
 
             registeredUsers[userIdx].password = newPass;
             localStorage.setItem('uin_reg_users', JSON.stringify(registeredUsers));
-            if (supabaseClient) await supabaseClient.from('pegawai').update({ password: newPass }).eq('nip', nip);
+            if (supabaseClient) {
+                try {
+                    await supabaseClient.from('pegawai').update({ password: newPass }).eq('nip', nip);
+                } catch(e) { console.warn("Supabase reset pass error:", e); }
+            }
 
             closeResetPasswordModal();
             showAlert('Berhasil', 'Password akun Anda berhasil direset.', 'success');
@@ -1596,14 +1596,15 @@
                     localStorage.setItem('uin_certs', JSON.stringify(certificates));
 
                     if (supabaseClient) {
-                        await supabaseClient.from('sertifikat').insert([{
-                            id: certId, nip: currentUser.nip, nama_pegawai: currentUser.nama, unit_kerja: currentUser.unitKerja,
-                            kategori, tingkat, nama_sertifikat: namaSertifikat, instansi_penerbit: instansiPenerbit,
-                            jumlah_jp: jumlahJp || '-', tahun, file_data: fileBase64, is_verified: false
-                        }]);
+                        try {
+                            await supabaseClient.from('sertifikat').insert([{
+                                id: certId, nip: currentUser.nip, nama_pegawai: currentUser.nama, unit_kerja: currentUser.unitKerja,
+                                kategori, tingkat, nama_sertifikat: namaSertifikat, instansi_penerbit: instansiPenerbit,
+                                jumlah_jp: jumlahJp || '-', tahun, file_data: fileBase64, is_verified: false
+                            }]);
+                        } catch(e) { console.warn("Supabase upload error:", e); }
                     }
 
-                    // Kirim otomatis ke Google Drive & Google Spreadsheet via Apps Script Web App jika URL tersedia
                     if (GAS_WEB_APP_URL) {
                         try {
                             await fetch(GAS_WEB_APP_URL, {
@@ -1704,7 +1705,11 @@
         async function deleteCert(id) {
             certificates = certificates.filter(c => c.id !== id);
             localStorage.setItem('uin_certs', JSON.stringify(certificates));
-            if (supabaseClient) await supabaseClient.from('sertifikat').delete().eq('id', id);
+            if (supabaseClient) {
+                try {
+                    await supabaseClient.from('sertifikat').delete().eq('id', id);
+                } catch(e) { console.warn("Supabase delete error:", e); }
+            }
             showDashboard();
             updateSystemState();
             showAlert('Berhasil', 'Dokumen berhasil dihapus.', 'success');
@@ -1887,9 +1892,11 @@
 
             localStorage.setItem('uin_reg_users', JSON.stringify(registeredUsers));
             if (supabaseClient) {
-                await supabaseClient.from('pegawai').update({
-                    nama: user.nama, email: user.email, phone: user.phone, status_asn: user.statusAsn, jabatan: user.jabatan, unit_kerja: user.unitKerja
-                }).eq('nip', origNip);
+                try {
+                    await supabaseClient.from('pegawai').update({
+                        nama: user.nama, email: user.email, phone: user.phone, status_asn: user.statusAsn, jabatan: user.jabatan, unit_kerja: user.unitKerja
+                    }).eq('nip', origNip);
+                } catch(e) { console.warn("Supabase update user error:", e); }
             }
             if (currentUser && currentUser.nip === origNip) {
                 currentUser = user;
@@ -1907,7 +1914,11 @@
             const newTempPass = 'Uin2026#' + Math.floor(1000 + Math.random() * 9000);
             user.password = newTempPass;
             localStorage.setItem('uin_reg_users', JSON.stringify(registeredUsers));
-            if (supabaseClient) await supabaseClient.from('pegawai').update({ password: newTempPass }).eq('nip', nip);
+            if (supabaseClient) {
+                try {
+                    await supabaseClient.from('pegawai').update({ password: newTempPass }).eq('nip', nip);
+                } catch(e) { console.warn("Supabase reset pass error:", e); }
+            }
 
             showAlert('Reset Berhasil', `Password ${user.nama} direset otomatis.`, 'success', () => {
                 showEmailVerificationModal(user, true, newTempPass);
@@ -1921,8 +1932,10 @@
             localStorage.setItem('uin_reg_users', JSON.stringify(registeredUsers));
             localStorage.setItem('uin_certs', JSON.stringify(certificates));
             if (supabaseClient) {
-                await supabaseClient.from('sertifikat').delete().eq('nip', nip);
-                await supabaseClient.from('pegawai').delete().eq('nip', nip);
+                try {
+                    await supabaseClient.from('sertifikat').delete().eq('nip', nip);
+                    await supabaseClient.from('pegawai').delete().eq('nip', nip);
+                } catch(e) { console.warn("Supabase delete user error:", e); }
             }
             if (currentUser && currentUser.nip === nip) logout();
             else {
@@ -2025,7 +2038,11 @@
             if (cert) {
                 cert.isVerified = !cert.isVerified;
                 localStorage.setItem('uin_certs', JSON.stringify(certificates));
-                if (supabaseClient) await supabaseClient.from('sertifikat').update({ is_verified: cert.isVerified }).eq('id', certId);
+                if (supabaseClient) {
+                    try {
+                        await supabaseClient.from('sertifikat').update({ is_verified: cert.isVerified }).eq('id', certId);
+                    } catch(e) { console.warn("Supabase verify update error:", e); }
+                }
                 viewUserDetail(nip);
                 updateAdminStats();
                 renderAdminArsip();

@@ -1011,7 +1011,6 @@
     <script>
         lucide.createIcons();
 
-        // Konfigurasi Google Apps Script Web App URL (Masukkan URL deploy GAS Anda di sini jika tersedia)
         const GAS_WEB_APP_URL = localStorage.getItem('uin_gas_url') || '';
 
         const SUPABASE_URL = 'https://nlqelocaekuskgibqvis.supabase.co';
@@ -1244,7 +1243,7 @@
                     const { error } = await supabaseClient.from('pegawai').insert([{
                         nip, nama, email, phone, status_asn: statusAsn, jabatan, unit_kerja: unitKerja, password, is_verified: false
                     }]);
-                    if (error) console.error("Supabase error insert pegawai:", error);
+                    if (error) console.error("Supabase error insert pegawai:", error.message);
                 } catch (err) { console.warn("Supabase insert user error:", err); }
             }
 

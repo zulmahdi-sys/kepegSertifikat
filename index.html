@@ -14,6 +14,7 @@ font-family: 'Inter', sans-serif;
 background: radial-gradient(circle at 15% 15%, #ecfdf5 0%, #f0fdfa 35%, #f8fafc 70%, #f1f5f9 100%);
 position: relative;
 overflow-x: hidden;
+min-height: 100vh;
 }
 body::before {
 content: '';
@@ -22,9 +23,9 @@ top: -10%;
 left: -10%;
 width: 50vw;
 height: 50vw;
-background: radial-gradient(circle, rgba(16, 185, 129, 0.15) 0%, rgba(5, 150, 105, 0.06) 50%, transparent 70%);
+background: radial-gradient(circle, rgba(16, 185, 129, 0.18) 0%, rgba(5, 150, 105, 0.08) 50%, transparent 70%);
 z-index: -1;
-filter: blur(70px);
+filter: blur(80px);
 pointer-events: none;
 animation: floatOrb 12s ease-in-out infinite alternate;
 }
@@ -35,15 +36,15 @@ bottom: -10%;
 right: -10%;
 width: 50vw;
 height: 50vw;
-background: radial-gradient(circle, rgba(20, 184, 166, 0.15) 0%, rgba(13, 148, 136, 0.05) 50%, transparent 70%);
+background: radial-gradient(circle, rgba(20, 184, 166, 0.18) 0%, rgba(13, 148, 136, 0.08) 50%, transparent 70%);
 z-index: -1;
-filter: blur(70px);
+filter: blur(80px);
 pointer-events: none;
 animation: floatOrb 15s ease-in-out infinite alternate-reverse;
 }
 @keyframes floatOrb {
 0% { transform: translateY(0px) translateX(0px) scale(1); }
-100% { transform: translateY(-30px) translateX(20px) scale(1.08); }
+100% { transform: translateY(-35px) translateX(25px) scale(1.1); }
 }
 @media print {
 body * { visibility: hidden; }
@@ -52,7 +53,7 @@ body * { visibility: hidden; }
 #adminPrintSection { position: absolute; left: 0; top: 0; width: 100%; }
 }
 .glass-card {
-background: rgba(255, 255, 255, 0.8);
+background: rgba(255, 255, 255, 0.82);
 backdrop-filter: blur(28px);
 -webkit-backdrop-filter: blur(28px);
 border: 1px solid rgba(255, 255, 255, 0.95);
@@ -60,12 +61,12 @@ box-shadow: 0 20px 45px -10px rgba(0, 0, 0, 0.06), 0 0 0 1px rgba(255, 255, 255,
 transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .glass-card:hover {
-transform: translateY(-5px);
+transform: translateY(-4px);
 box-shadow: 0 30px 60px -15px rgba(4, 120, 87, 0.18), 0 0 0 1px rgba(255, 255, 255, 1) inset;
-background: rgba(255, 255, 255, 0.92);
+background: rgba(255, 255, 255, 0.94);
 }
 .glass-modal {
-background: rgba(255, 255, 255, 0.92);
+background: rgba(255, 255, 255, 0.94);
 backdrop-filter: blur(35px);
 -webkit-backdrop-filter: blur(35px);
 border: 1px solid rgba(255, 255, 255, 1);
@@ -176,14 +177,21 @@ animation: float 5s ease-in-out infinite;
 <div class="text-center mb-6">
 <h2 class="text-2xl font-black text-slate-900">Login Pegawai UIN</h2>
 <p class="text-xs text-slate-500 mt-1">Masukkan NIP dan password akun terverifikasi Anda.</p>
+<div class="mt-3 bg-emerald-50 border border-emerald-200 text-emerald-800 text-[11px] p-2.5 rounded-xl text-left">
+<strong>Akun Uji Coba (Demo):</strong>
+
+NIP: <code class="bg-white px-1 py-0.5 rounded font-bold">198501012015031001</code>
+
+Password: <code class="bg-white px-1 py-0.5 rounded font-bold">password123</code>
+</div>
 </div>
 <div>
 <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-2">Nomor Induk Pegawai (NIP / NIDN)</label>
-<input type="text" id="loginNip" required placeholder="Contoh: 198501012015031001" class="w-full px-4 py-3 rounded-2xl border border-slate-200/80 bg-white/60 focus:bg-white focus:ring-2 focus:ring-emerald-500 text-sm transition shadow-sm">
+<input type="text" id="loginNip" required value="198501012015031001" placeholder="Contoh: 198501012015031001" class="w-full px-4 py-3 rounded-2xl border border-slate-200/80 bg-white/80 focus:bg-white focus:ring-2 focus:ring-emerald-500 text-sm transition shadow-sm">
 </div>
 <div>
 <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-2">Password</label>
-<input type="password" id="loginPass" required placeholder="••••••••" class="w-full px-4 py-3 rounded-2xl border border-slate-200/80 bg-white/60 focus:bg-white focus:ring-2 focus:ring-emerald-500 text-sm transition shadow-sm">
+<input type="password" id="loginPass" required value="password123" placeholder="••••••••" class="w-full px-4 py-3 rounded-2xl border border-slate-200/80 bg-white/80 focus:bg-white focus:ring-2 focus:ring-emerald-500 text-sm transition shadow-sm">
 </div>
 <div class="flex justify-between items-center text-xs">
 <button type="button" onclick="openResetPasswordModal()" class="text-emerald-700 hover:underline font-semibold">Lupa Password?</button>
@@ -199,20 +207,20 @@ animation: float 5s ease-in-out infinite;
 </div>
 <div>
 <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Nomor Induk Pegawai (NIP / NIDN / NIDK)</label>
-<input type="text" id="regNip" required placeholder="Contoh: 198501012015031001" class="w-full px-4 py-2.5 rounded-2xl border border-slate-200/80 bg-white/60 focus:bg-white text-sm shadow-sm">
+<input type="text" id="regNip" required placeholder="Contoh: 198501012015031001" class="w-full px-4 py-2.5 rounded-2xl border border-slate-200/80 bg-white/80 focus:bg-white text-sm shadow-sm">
 </div>
 <div>
 <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Nama Lengkap & Gelar</label>
-<input type="text" id="regNama" required placeholder="Contoh: Dr. H. Ahmad Zulkarnain, M.Ag." class="w-full px-4 py-2.5 rounded-2xl border border-slate-200/80 bg-white/60 focus:bg-white text-sm shadow-sm">
+<input type="text" id="regNama" required placeholder="Contoh: Dr. H. Ahmad Zulkarnain, M.Ag." class="w-full px-4 py-2.5 rounded-2xl border border-slate-200/80 bg-white/80 focus:bg-white text-sm shadow-sm">
 </div>
 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
 <div>
 <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Email Aktif</label>
-<input type="email" id="regEmail" required placeholder="email@ar-raniry.ac.id" class="w-full px-4 py-2.5 rounded-2xl border border-slate-200/80 bg-white/60 focus:bg-white text-sm shadow-sm">
+<input type="email" id="regEmail" required placeholder="email@ar-raniry.ac.id" class="w-full px-4 py-2.5 rounded-2xl border border-slate-200/80 bg-white/80 focus:bg-white text-sm shadow-sm">
 </div>
 <div>
 <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">No. WhatsApp</label>
-<input type="text" id="regPhone" required placeholder="081234567890" class="w-full px-4 py-2.5 rounded-2xl border border-slate-200/80 bg-white/60 focus:bg-white text-sm shadow-sm">
+<input type="text" id="regPhone" required placeholder="081234567890" class="w-full px-4 py-2.5 rounded-2xl border border-slate-200/80 bg-white/80 focus:bg-white text-sm shadow-sm">
 </div>
 </div>
 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -259,7 +267,7 @@ animation: float 5s ease-in-out infinite;
 </div>
 <div>
 <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Buat Password Akun</label>
-<input type="password" id="regPass" required placeholder="••••••••" class="w-full px-4 py-2.5 rounded-2xl border border-slate-200/80 bg-white/60 focus:bg-white text-sm shadow-sm">
+<input type="password" id="regPass" required placeholder="••••••••" class="w-full px-4 py-2.5 rounded-2xl border border-slate-200/80 bg-white/80 focus:bg-white text-sm shadow-sm">
 </div>
 <button type="submit" class="w-full bg-gradient-to-r from-emerald-700 to-teal-700 hover:from-emerald-800 hover:to-teal-800 text-white font-bold py-3.5 rounded-2xl transition shadow-lg shadow-emerald-700/25 text-sm flex items-center justify-center gap-2 mt-2">
 <i data-lucide="user-plus" class="w-4 h-4"></i> Daftar & Kirim Email Verifikasi
@@ -307,8 +315,4 @@ Pengumuman & Jadwal Upload Terbaru
 </div>
 <div class="bg-gradient-to-r from-amber-50/90 to-orange-50/90 border border-amber-200/80 rounded-3xl p-6 text-amber-950 text-xs sm:text-sm space-y-2.5 shadow-sm backdrop-blur-md">
 <div class="flex items-center gap-2.5 font-black text-amber-950 text-base">
-<i data-lucide="info" class="w-5 h-5 text-amber-600"></i> Ketentuan Integrasi Supabase, Google Drive & Spreadsheet UIN Ar-Raniry:
-</div>
-<ul class="list-disc pl-5 space-y-1.5 text-amber-900/90 font-medium">
-<li><strong>Supabase Cloud Database:</strong> Seluruh data akun pegawai tersimpan aman di Supabase (nlqelocaekuskgibqvis.supabase.co).</li>
-<li><strong>Google Drive Storage:</strong> File PDF / JPG berukuran maksimal 2MB tersimpan otomatis ke dalam Google Dri
+<i data-lucide="info" class="w-5 h-5 text-amber-600"></i> Ketentuan Int

@@ -149,7 +149,7 @@
                 <div>
                     <div class="text-xs font-bold text-slate-400 uppercase tracking-wider">Jumlah Pengguna</div>
                     <div id="statPublicUsers" class="text-3xl font-extrabold text-slate-900 mt-1">0</div>
-                    <div class="text-xs text-emerald-600 font-medium mt-0.5">Pegawai terdaftar aktif (Supabase & Sheet)</div>
+                    <div class="text-xs text-emerald-600 font-medium mt-0.5">Pegawai terdaftar aktif</div>
                 </div>
             </div>
             <div class="glass-card p-6 rounded-3xl flex items-center gap-5">
@@ -462,7 +462,7 @@
                 <div class="flex flex-col sm:flex-row justify-between items-center gap-4">
                     <div>
                         <h3 class="font-black text-slate-900 text-base">Master Database Akun Pegawai (Supabase & Spreadsheet)</h3>
-                        <p class="text-xs text-slate-500">Kelola akun pegawai, edit profil, reset password, hapus akun, dan lihat detail akun secara lengkap.</p>
+                        <p class="text-xs text-slate-500">Kelola akun pegawai secara penuh: lihat profil lengkap, edit data akun, ubah password, cetak dokumen, dan hapus akun.</p>
                     </div>
                     <div class="w-full sm:w-auto">
                         <input type="text" id="adminMasterSearch" onkeyup="renderAdminMasterDbTable()" placeholder="Cari NIP / Nama / Email..." class="px-4 py-2.5 rounded-2xl border border-slate-200 text-xs w-full sm:w-64 focus:ring-2 focus:ring-emerald-500 bg-white/80">
@@ -794,18 +794,18 @@
     </div>
 
     <div id="adminEditUserModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
-        <div class="glass-modal rounded-3xl max-w-lg w-full p-8 shadow-2xl border border-white">
+        <div class="glass-modal rounded-3xl max-w-lg w-full p-8 shadow-2xl border border-white max-h-[90vh] overflow-y-auto">
             <div class="flex justify-between items-center mb-5 pb-3 border-b border-slate-100">
                 <h3 class="font-black text-slate-900 text-base flex items-center gap-2.5">
                     <div class="w-9 h-9 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center"><i data-lucide="user-pen" class="w-5 h-5"></i></div>
-                    Edit Data Pegawai (Admin)
+                    Edit Data Pegawai (Admin Master DB)
                 </h3>
                 <button type="button" onclick="closeAdminEditUserModal()" class="text-slate-400 hover:text-slate-600 cursor-pointer"><i data-lucide="x" class="w-5 h-5"></i></button>
             </div>
             <form onsubmit="handleAdminUpdateUser(event)" class="space-y-4">
                 <input type="hidden" id="adminEditUserNipOriginal">
                 <div>
-                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">NIP</label>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">NIP (Tidak dapat diubah)</label>
                     <input type="text" id="adminEditNip" required class="w-full px-4 py-2.5 rounded-2xl border border-slate-200 text-sm bg-slate-100 font-mono" readonly>
                 </div>
                 <div>
@@ -861,9 +861,13 @@
                         <option value="Unit Lainnya">Unit Lainnya</option>
                     </select>
                 </div>
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Ubah Password Baru (Opsional)</label>
+                    <input type="text" id="adminEditPassword" placeholder="Kosongkan jika tidak ingin mengubah password" class="w-full px-4 py-2.5 rounded-2xl border border-slate-200 text-sm bg-white/60">
+                </div>
                 <div class="flex justify-end gap-3 pt-3">
                     <button type="button" onclick="closeAdminEditUserModal()" class="px-5 py-2.5 rounded-2xl border border-slate-200 text-slate-700 text-sm font-bold hover:bg-slate-50 transition cursor-pointer">Batal</button>
-                    <button type="submit" class="px-6 py-2.5 rounded-2xl bg-emerald-700 hover:bg-emerald-800 text-white text-sm font-bold transition shadow-md cursor-pointer">Simpan Perubahan</button>
+                    <button type="submit" class="px-6 py-2.5 rounded-2xl bg-emerald-700 hover:bg-emerald-800 text-white text-sm font-bold transition shadow-md cursor-pointer">Simpan Perubahan Master</button>
                 </div>
             </form>
         </div>
@@ -2036,6 +2040,7 @@
             document.getElementById('adminEditStatusAsn').value = user.statusAsn;
             document.getElementById('adminEditJabatan').value = user.jabatan;
             document.getElementById('adminEditUnitKerja').value = user.unitKerja;
+            document.getElementById('adminEditPassword').value = '';
             document.getElementById('adminEditUserModal').classList.remove('hidden');
         }
 
@@ -2052,14 +2057,17 @@
             user.statusAsn = document.getElementById('adminEditStatusAsn').value;
             user.jabatan = document.getElementById('adminEditJabatan').value;
             user.unitKerja = document.getElementById('adminEditUnitKerja').value;
+            const newPass = document.getElementById('adminEditPassword').value.trim();
+            if (newPass) user.password = newPass;
 
             localStorage.setItem('uin_reg_users', JSON.stringify(registeredUsers));
             if (supabaseClient) {
                 try {
                     await supabaseClient.from('pegawai').update({
-                        nama: user.nama, email: user.email, phone: user.phone, status_asn: user.statusAsn, jabatan: user.jabatan, unit_kerja: user.unitKerja
+                        nama: user.nama, email: user.email, phone: user.phone, status_asn: user.statusAsn, jabatan: user.jabatan, unit_kerja: user.unitKerja,
+                        ...(newPass ? { password: newPass } : {})
                     }).eq('nip', origNip);
-                } catch(e) { console.warn("Supabase update user error:", e); }
+                } catch(e) { console.warn("Supabase admin update user error:", e); }
             }
             if (currentUser && currentUser.nip === origNip) {
                 currentUser = user;
@@ -2068,7 +2076,7 @@
             closeAdminEditUserModal();
             renderAdminMasterDbTable();
             renderAdminTable();
-            showAlert('Berhasil', 'Data pegawai diperbarui.', 'success');
+            showAlert('Berhasil', 'Data pegawai berhasil diperbarui oleh Administrator.', 'success');
         }
 
         async function adminResetUserPassword(nip) {

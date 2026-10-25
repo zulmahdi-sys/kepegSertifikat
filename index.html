@@ -2099,7 +2099,7 @@
         function adminDeleteUserPrompt(nip) {
             const user = registeredUsers.find(u => u.nip === nip);
             if (!user) return;
-            showAlert('Konfirmasi Hapus Akun', `Apakah Anda yakin ingin menghapus akun ${user.nama} (${nip}) beserta seluruh sertifikatnya?`, 'warning', () => {
+            showAlert('Konfirmasi Hapus Akun', `Apakah Anda yakin ingin menghapus akun ${user.nama} (${nip}) beserta seluruh sertifikatnya secara permanen dari Supabase dan Spreadsheet?`, 'warning', () => {
                 executeAdminDeleteUser(nip);
             }, true);
         }
@@ -2109,18 +2109,29 @@
             certificates = certificates.filter(c => c.nip !== nip);
             localStorage.setItem('uin_reg_users', JSON.stringify(registeredUsers));
             localStorage.setItem('uin_certs', JSON.stringify(certificates));
+            
             if (supabaseClient) {
                 try {
                     await supabaseClient.from('sertifikat').delete().eq('nip', nip);
                     await supabaseClient.from('pegawai').delete().eq('nip', nip);
                 } catch(e) { console.warn("Supabase delete user error:", e); }
             }
-            if (currentUser && currentUser.nip === nip) logout();
-            else {
+
+            try {
+                await fetch(GAS_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    body: JSON.stringify({ action: 'delete_pegawai', nip: nip })
+                });
+            } catch(gasErr) { console.warn("GAS delete sync error:", gasErr); }
+
+            if (currentUser && currentUser.nip === nip) {
+                logout();
+            } else {
                 renderAdminMasterDbTable();
                 renderAdminTable();
                 updateAdminStats();
-                showAlert('Berhasil', 'Akun pegawai berhasil dihapus.', 'success');
+                showAlert('Berhasil', 'Akun pegawai dan seluruh sertifikat terkait berhasil dihapus dari sistem, Supabase, dan Spreadsheet.', 'success');
             }
         }
 

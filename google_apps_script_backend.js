@@ -1,102 +1,65 @@
-/**
- * Google Apps Script Backend for UIN Ar-Raniry Certificate Collection System
- * Spreadsheet ID: 1JUs07WljgRkFgKj5Bq3lPq54QF4-c1R8BUo8Rp7ySpQ
- * Drive Folder ID: 1DVlR9lMRdIDDuEbqUVyVlAxypxNoUOLo
- */
-
-const SPREADSHEET_ID = '1JUs07WljgRkFgKj5Bq3lPq54QF4-c1R8BUo8Rp7ySpQ';
-const DRIVE_FOLDER_ID = '1DVlR9lMRdIDDuEbqUVyVlAxypxNoUOLo';
-
-function doGet(e) {
-  return ContentService.createTextOutput(JSON.stringify({
-    status: 'success',
-    message: 'UIN Ar-Raniry Backend API is active & running.'
-  })).setMimeType(ContentService.MimeType.JSON);
-}
+// ==============================================================================
+// GOOGLE APPS SCRIPT BACKEND CODE (Paste into Extensions > Apps Script)
+// Project: UIN Ar-Raniry Banda Aceh - Sistem Pengumpulan Sertifikat
+// ==============================================================================
 
 function doPost(e) {
   try {
-    if (!e || !e.postData || !e.postData.contents) {
-      return ContentService.createTextOutput(JSON.stringify({ status: 'error', message: 'No post data received' }))
-        .setMimeType(ContentService.MimeType.JSON);
+    var data = JSON.parse(e.postData.contents);
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    
+    if (data.type === 'register_pegawai') {
+      var sheet = ss.getSheetByName('Pegawai') || ss.insertSheet('Pegawai');
+      if (sheet.getLastRow() === 0) {
+        sheet.appendRow(['NIP', 'Nama', 'WhatsApp', 'Email', 'Jabatan', 'Unit Kerja', 'Created At']);
+      }
+      sheet.appendRow([
+        data.nip, 
+        data.nama, 
+        data.whatsapp, 
+        data.email, 
+        data.jabatan, 
+        data.unit_kerja, 
+        new Date()
+      ]);
+    } 
+    else if (data.type === 'upload_sertifikat') {
+      var sheet = ss.getSheetByName('Sertifikat') || ss.insertSheet('Sertifikat');
+      if (sheet.getLastRow() === 0) {
+        sheet.appendRow(['ID', 'NIP', 'Nama', 'Kategori', 'Judul', 'Tingkat', 'Tahun', 'Status', 'Created At']);
+      }
+      sheet.appendRow([
+        data.id, 
+        data.nip, 
+        data.nama, 
+        data.kategori, 
+        data.judul, 
+        data.tingkat, 
+        data.tahun, 
+        data.status, 
+        new Date()
+      ]);
     }
-    
-    const data = JSON.parse(e.postData.contents);
-    const type = data.type || data.action;
-    
-    const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
-    
-    if (type === 'register_pegawai') {
-      let sheet = ss.getSheetByName('Pegawai');
-      if (!sheet) {
-        sheet = ss.insertSheet('Pegawai');
-        sheet.appendRow(['NIP', 'Nama', 'Email', 'Phone', 'Jabatan', 'Unit Kerja', 'Registered At']);
-      }
-      sheet.appendRow([data.nip, data.nama, data.email, data.whatsapp || data.phone, data.jabatan, data.unit_kerja || data.unitKerja, new Date()]);
-      
-      return ContentService.createTextOutput(JSON.stringify({ status: 'success', message: 'Pegawai registered successfully' }))
-        .setMimeType(ContentService.MimeType.JSON);
-        
-    } else if (type === 'upload_sertifikat' || type === 'upload_certificate') {
-      let sheet = ss.getSheetByName('Sertifikat');
-      if (!sheet) {
-        sheet = ss.insertSheet('Sertifikat');
-        sheet.appendRow(['ID', 'NIP', 'Nama Pegawai', 'Kategori', 'Tingkat', 'Judul', 'Tahun', 'File URL', 'Status', 'Uploaded At']);
-      }
-      
-      let fileUrl = '';
-      if (data.file_url || data.fileBase64) {
-        try {
-          const folder = DriveApp.getFolderById(DRIVE_FOLDER_ID);
-          const rawBase64 = data.file_url || data.fileBase64;
-          const splitData = rawBase64.split(',');
-          const contentType = splitData[0].match(/:(.*?);/)[1];
-          const decodedBytes = Utilities.base64Decode(splitData[1]);
-          const blob = Utilities.newBlob(decodedBytes, contentType, data.file_name || 'sertifikat.pdf');
-          
-          const file = folder.createFile(blob);
-          fileUrl = file.getUrl();
-          file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
-        } catch (driveErr) {
-          console.error("Drive upload error:", driveErr);
-        }
-      }
-      
-      sheet.appendRow([data.id, data.nip, data.nama || data.namaPegawai, data.kategori, data.tingkat, data.judul || data.namaSertifikat, data.tahun, fileUrl, data.status || 'Pending', new Date()]);
-      
-      return ContentService.createTextOutput(JSON.stringify({ status: 'success', fileUrl: fileUrl, message: 'Certificate uploaded to Drive & Sheet' }))
-        .setMimeType(ContentService.MimeType.JSON);
-        
-    } else if (type === 'delete_pegawai') {
-      let sheetPegawai = ss.getSheetByName('Pegawai');
-      if (sheetPegawai) {
-        const rows = sheetPegawai.getDataRange().getValues();
-        for (let i = rows.length; i >= 2; i--) {
-          if (String(rows[i-1][0]) === String(data.nip)) {
-            sheetPegawai.deleteRow(i);
+    else if (data.type === 'delete_pegawai') {
+      var sheet = ss.getSheetByName('Pegawai');
+      if (sheet) {
+        var rows = sheet.getDataRange().getValues();
+        for (var i = rows.length - 1; i >= 1; i--) {
+          if (rows[i][0] == data.nip) {
+            sheet.deleteRow(i + 1);
           }
         }
       }
-      
-      let sheetCerts = ss.getSheetByName('Sertifikat');
-      if (sheetCerts) {
-        const rows = sheetCerts.getDataRange().getValues();
-        for (let i = rows.length; i >= 2; i--) {
-          if (String(rows[i-1][1]) === String(data.nip)) {
-            sheetCerts.deleteRow(i);
-          }
-        }
-      }
-      
-      return ContentService.createTextOutput(JSON.stringify({ status: 'success', message: 'Pegawai and certificates deleted from sheet' }))
-        .setMimeType(ContentService.MimeType.JSON);
     }
     
-    return ContentService.createTextOutput(JSON.stringify({ status: 'error', message: 'Invalid action type' }))
-        .setMimeType(ContentService.MimeType.JSON);
-      
-  } catch (err) {
-    return ContentService.createTextOutput(JSON.stringify({ status: 'error', message: err.toString() }))
+    return ContentService.createTextOutput(JSON.stringify({status: 'success'}))
+      .setMimeType(ContentService.MimeType.JSON);
+  } catch(err) {
+    return ContentService.createTextOutput(JSON.stringify({status: 'error', message: err.toString()}))
       .setMimeType(ContentService.MimeType.JSON);
   }
+}
+
+function doGet(e) {
+  return ContentService.createTextOutput("UIN Ar-Raniry Certificate Collection API is Active & Ready.");
 }

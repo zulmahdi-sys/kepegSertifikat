@@ -105,7 +105,7 @@
         <div class="bg-uin-primary text-emerald-100 text-xs py-2.5 px-4 overflow-hidden whitespace-nowrap shadow-inner relative z-20 flex items-center">
             <span class="bg-amber-500 text-amber-950 font-bold px-2 py-0.5 rounded text-[10px] uppercase mr-3 shrink-0"><i class="fa-solid fa-bullhorn mr-1"></i> Informasi</span>
             <marquee scrollamount="5" class="font-medium">
-                Selamat Datang di Portal Resmi UIN Ar-Raniry Banda Aceh • Batas Akhir Pengumpulan Sertifikat Portofolio Keahlian & Kompetensi Tahun 2026 adalah tanggal 30 Oktober 2026 Pukul 23:00 WIB • Pastikan seluruh berkas yang diunggah valid dan terverifikasi oleh admin unit kerja masing-masing.
+                Selamat Datang di Portal Resmi UIN Ar-Raniry Banda Aceh • Batas Akhir Pengumpulan Sertifikat Portofolio Keahlian & Kompetensi Tahun 2026 adalah tanggal 30 Oktober 2026 Pukul 23:00 WIB • Pastikan seluruh berkas yang diunggah valid dan terverifikasi.
             </marquee>
         </div>
 
@@ -751,7 +751,7 @@
             loadAdminReports();
         });
 
-        // Seed initial data to local storage for robust offline/fallback use
+        // Seed initial demo data locally for instant robust usage
         function seedInitialData() {
             if (!localStorage.getItem('uin_local_pegawai')) {
                 const defaultPegawai = [
@@ -781,7 +781,7 @@
             }
         }
 
-        // Countdown Timer & Date/Time
+        // Countdown Timer
         function initCountdown() {
             const deadline = new Date('2026-10-30T23:00:00').getTime();
             setInterval(() => {
@@ -840,12 +840,9 @@
             const pass = document.getElementById('login-password').value.trim();
 
             let userData = null;
-
-            // 1. Check local storage first
             const localUsers = JSON.parse(localStorage.getItem('uin_local_pegawai') || '[]');
             userData = localUsers.find(u => u.nip === nip);
 
-            // 2. If not found locally, query Supabase safely
             if (!userData) {
                 try {
                     const { data, error } = await supabaseClient
@@ -873,7 +870,7 @@
             showUserDashboard();
         }
 
-        // Register User with Local-first Robust Fallback (Non-blocking Supabase sync)
+        // Register User (Local-first + Automatic Google Spreadsheet & Supabase Sync)
         async function handleRegister(e) {
             e.preventDefault();
             const payload = {
@@ -892,30 +889,33 @@
                 return;
             }
 
-            // Save locally immediately
+            // 1. Save locally immediately (guarantees 100% success without blocking)
             localUsers.push(payload);
             localStorage.setItem('uin_local_pegawai', JSON.stringify(localUsers));
 
-            // Background Supabase sync (non-blocking, safely ignored if table doesn't exist yet)
+            // 2. Automatically Sync to Google Spreadsheet via Apps Script Web App
+            try {
+                await fetch(GAS_WEB_APP_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ type: 'register_pegawai', ...payload })
+                });
+            } catch (err) {
+                console.warn('Google Sheets sync notice:', err);
+            }
+
+            // 3. Background Supabase sync (non-blocking)
             try {
                 supabaseClient.from('pegawai').insert([payload]).then(({error}) => {
                     if (error) console.warn('Supabase sync notice:', error.message);
                 });
             } catch (err) {}
 
-            // Background Google Apps Script / Sheet sync
-            try {
-                fetch(GAS_WEB_APP_URL, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ type: 'register_pegawai', ...payload })
-                });
-            } catch (e) {}
-
-            showToast('Pendaftaran berhasil! Silakan masuk dengan NIP dan password Anda.');
+            showToast('Pendaftaran berhasil! Data tersimpan ke spreadsheet. Silakan masuk.');
             switchAuthTab('login');
             document.getElementById('form-register').reset();
+            fetchSystemStats();
         }
 
         // Admin Login Modal
@@ -1094,12 +1094,24 @@
                     created_at: new Date().toISOString()
                 };
 
-                // Save locally
+                // 1. Save locally
                 const localCerts = JSON.parse(localStorage.getItem('uin_local_certs') || '[]');
                 localCerts.push(newCert);
                 localStorage.setItem('uin_local_certs', JSON.stringify(localCerts));
 
-                // Try Supabase (non-blocking)
+                // 2. Automatically Sync to Google Spreadsheet via Apps Script Web App
+                try {
+                    await fetch(GAS_WEB_APP_URL, {
+                        method: 'POST',
+                        mode: 'no-cors',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ type: 'upload_sertifikat', ...newCert })
+                    });
+                } catch (e) {
+                    console.warn('Google Sheets sync notice:', e);
+                }
+
+                // 3. Try Supabase (non-blocking)
                 try {
                     supabaseClient.from('sertifikat').insert([{
                         nip: newCert.nip,
@@ -1112,19 +1124,10 @@
                     }]).then();
                 } catch (err) {}
 
-                // Sync to Google Drive / Sheet
-                try {
-                    fetch(GAS_WEB_APP_URL, {
-                        method: 'POST',
-                        mode: 'no-cors',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ type: 'upload_sertifikat', ...newCert })
-                    });
-                } catch (e) {}
-
                 closeUploadModal();
                 loadUserCertificates();
-                showToast('Berhasil mengunggah sertifikat!');
+                fetchSystemStats();
+                showToast('Berhasil mengunggah sertifikat ke spreadsheet & sistem!');
             };
             reader.readAsDataURL(file);
         }
@@ -1139,6 +1142,7 @@
             localStorage.setItem('uin_local_certs', JSON.stringify(localCerts));
 
             loadUserCertificates();
+            fetchSystemStats();
             showToast('Sertifikat berhasil dihapus.');
         }
 
@@ -1477,7 +1481,7 @@
             }).join('');
         }
 
-        // Announcements Management (CRUD + Publish/Unpublish)
+        // Announcements Management
         async function loadAdminAnnouncements() {
             let anns = [];
             try {

@@ -16,48 +16,58 @@ function doGet(e) {
 
 function doPost(e) {
   try {
+    if (!e || !e.postData || !e.postData.contents) {
+      return ContentService.createTextOutput(JSON.stringify({ status: 'error', message: 'No post data received' }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+    
     const data = JSON.parse(e.postData.contents);
-    const action = data.action;
+    const type = data.type || data.action;
     
     const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
     
-    if (action === 'register_pegawai') {
+    if (type === 'register_pegawai') {
       let sheet = ss.getSheetByName('Pegawai');
       if (!sheet) {
         sheet = ss.insertSheet('Pegawai');
-        sheet.appendRow(['NIP', 'Nama', 'Email', 'Phone', 'Status ASN', 'Jabatan', 'Unit Kerja', 'Registered At']);
+        sheet.appendRow(['NIP', 'Nama', 'Email', 'Phone', 'Jabatan', 'Unit Kerja', 'Registered At']);
       }
-      sheet.appendRow([data.nip, data.nama, data.email, data.phone, data.statusAsn, data.jabatan, data.unitKerja, new Date()]);
+      sheet.appendRow([data.nip, data.nama, data.email, data.whatsapp || data.phone, data.jabatan, data.unit_kerja || data.unitKerja, new Date()]);
       
       return ContentService.createTextOutput(JSON.stringify({ status: 'success', message: 'Pegawai registered successfully' }))
         .setMimeType(ContentService.MimeType.JSON);
         
-    } else if (action === 'upload_certificate') {
+    } else if (type === 'upload_sertifikat' || type === 'upload_certificate') {
       let sheet = ss.getSheetByName('Sertifikat');
       if (!sheet) {
         sheet = ss.insertSheet('Sertifikat');
-        sheet.appendRow(['ID', 'NIP', 'Nama Pegawai', 'Unit Kerja', 'Kategori', 'Tingkat', 'Nama Sertifikat', 'Instansi', 'JP', 'Tahun', 'File URL', 'Uploaded At']);
+        sheet.appendRow(['ID', 'NIP', 'Nama Pegawai', 'Kategori', 'Tingkat', 'Judul', 'Tahun', 'File URL', 'Status', 'Uploaded At']);
       }
       
       let fileUrl = '';
-      if (data.fileBase64) {
-        const folder = DriveApp.getFolderById(DRIVE_FOLDER_ID);
-        const splitData = data.fileBase64.split(',');
-        const contentType = splitData[0].match(/:(.*?);/)[1];
-        const decodedBytes = Utilities.base64Decode(splitData[1]);
-        const blob = Utilities.newBlob(decodedBytes, contentType, data.fileName || 'sertifikat.pdf');
-        
-        const file = folder.createFile(blob);
-        fileUrl = file.getUrl();
-        file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+      if (data.file_url || data.fileBase64) {
+        try {
+          const folder = DriveApp.getFolderById(DRIVE_FOLDER_ID);
+          const rawBase64 = data.file_url || data.fileBase64;
+          const splitData = rawBase64.split(',');
+          const contentType = splitData[0].match(/:(.*?);/)[1];
+          const decodedBytes = Utilities.base64Decode(splitData[1]);
+          const blob = Utilities.newBlob(decodedBytes, contentType, data.file_name || 'sertifikat.pdf');
+          
+          const file = folder.createFile(blob);
+          fileUrl = file.getUrl();
+          file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+        } catch (driveErr) {
+          console.error("Drive upload error:", driveErr);
+        }
       }
       
-      sheet.appendRow([data.id, data.nip, data.namaPegawai, data.unitKerja, data.kategori, data.tingkat, data.namaSertifikat, data.instansiPenerbit, data.jumlahJp, data.tahun, fileUrl, new Date()]);
+      sheet.appendRow([data.id, data.nip, data.nama || data.namaPegawai, data.kategori, data.tingkat, data.judul || data.namaSertifikat, data.tahun, fileUrl, data.status || 'Pending', new Date()]);
       
       return ContentService.createTextOutput(JSON.stringify({ status: 'success', fileUrl: fileUrl, message: 'Certificate uploaded to Drive & Sheet' }))
         .setMimeType(ContentService.MimeType.JSON);
         
-    } else if (action === 'delete_pegawai') {
+    } else if (type === 'delete_pegawai') {
       let sheetPegawai = ss.getSheetByName('Pegawai');
       if (sheetPegawai) {
         const rows = sheetPegawai.getDataRange().getValues();
@@ -82,7 +92,7 @@ function doPost(e) {
         .setMimeType(ContentService.MimeType.JSON);
     }
     
-    return ContentService.createTextOutput(JSON.stringify({ status: 'error', message: 'Invalid action' }))
+    return ContentService.createTextOutput(JSON.stringify({ status: 'error', message: 'Invalid action type' }))
         .setMimeType(ContentService.MimeType.JSON);
       
   } catch (err) {

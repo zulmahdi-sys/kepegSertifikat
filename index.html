@@ -345,8 +345,14 @@
                         </div>
                         <p class="text-sm text-slate-600">Pusat kontrol validasi sertifikat, kelola pegawai, jadwal, laporan, dan pengumuman.</p>
                     </div>
-                    <div>
-                        <button onclick="logout()" class="px-4 py-2.5 bg-red-100 hover:bg-red-200 text-red-700 font-bold rounded-xl transition-all text-xs">
+                    <div class="flex flex-wrap items-center gap-2">
+                        <a href="https://docs.google.com/spreadsheets/d/1JUs07WljgRkFgKj5Bq3lPq54QF4-c1R8BUo8Rp7ySpQ/edit" target="_blank" class="px-4 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white font-bold rounded-xl transition-all text-xs flex items-center shadow">
+                            <i class="fa-solid fa-file-excel mr-1.5 text-emerald-300 text-sm"></i> Buka Spreadsheet
+                        </a>
+                        <a href="https://drive.google.com/drive/folders/1DVlR9lMRdIDDuEbqUVyVlAxypxNoUOLo" target="_blank" class="px-4 py-2.5 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-xl transition-all text-xs flex items-center shadow">
+                            <i class="fa-brands fa-google-drive mr-1.5 text-amber-200 text-sm"></i> Buka Google Drive
+                        </a>
+                        <button onclick="logout()" class="px-4 py-2.5 bg-red-100 hover:bg-red-200 text-red-700 font-bold rounded-xl transition-all text-xs flex items-center">
                             <i class="fa-solid fa-right-from-bracket mr-1.5"></i> Keluar Admin
                         </button>
                     </div>
@@ -1335,7 +1341,8 @@
             let localUsers = getLocalUsers().filter(u => u.nip !== nip);
             localStorage.setItem('uin_local_users', JSON.stringify(localUsers));
 
-            let localCerts = JSON.parse(localStorage.getItem('uin_local_certs') || '[]').filter(c => c.nip !== nip);
+            let localCerts = JSON.parse(localStorage.getItem('uin_local_certs') || '[]');
+            localCerts = localCerts.filter(c => c.nip !== nip);
             localStorage.setItem('uin_local_certs', JSON.stringify(localCerts));
 
             if (supabaseClient) {
@@ -1512,7 +1519,7 @@
 
             loadAdminAnnouncements();
             loadPublicAnnouncements();
-            showToast('Pengumuman berhasil disimpan.');
+            showToast('Pengumuman berhasil dihapus.');
         }
 
         function filterAdminParticipants() {}

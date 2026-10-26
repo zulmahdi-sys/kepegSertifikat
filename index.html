@@ -9,8 +9,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Google Fonts: Plus Jakarta Sans -->
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <!-- Supabase JS Client -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
         tailwind.config = {
             theme: {
@@ -31,7 +29,7 @@
     </script>
     <style>
         .glass-card {
-            background: rgba(255, 255, 255, 0.82);
+            background: rgba(255, 255, 255, 0.85);
             backdrop-filter: blur(24px);
             -webkit-backdrop-filter: blur(24px);
             border: 1px solid rgba(255, 255, 255, 0.6);
@@ -92,20 +90,18 @@
     <div id="app" class="relative z-10 flex flex-col min-h-screen">
 
         <!-- HEADER NAVIGATION -->
-        <header class="glass-card sticky top-0 z-50 px-4 md:px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-3 border-b border-white/40">
-            <div class="flex items-center space-x-3 w-full sm:w-auto justify-between sm:justify-start">
-                <div class="flex items-center space-x-3">
-                    <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-uin-primary to-uin-secondary flex items-center justify-center text-white shadow-lg shadow-emerald-900/20 shrink-0">
-                        <i class="fa-solid fa-graduation-cap text-xl"></i>
-                    </div>
-                    <div>
-                        <h1 class="text-sm md:text-lg font-extrabold text-uin-primary tracking-tight">UIN AR-RANIRY BANDA ACEH</h1>
-                        <p class="text-[11px] md:text-xs font-medium text-slate-600">Sistem Pengumpulan Sertifikat Keahlian & Kompetensi</p>
-                    </div>
+        <header class="glass-card sticky top-0 z-50 px-4 md:px-6 py-4 flex items-center justify-between border-b border-white/40">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 md:w-12 h-10 md:h-12 rounded-2xl bg-gradient-to-tr from-uin-primary to-uin-secondary flex items-center justify-center text-white shadow-lg shadow-emerald-900/20 shrink-0">
+                    <i class="fa-solid fa-graduation-cap text-lg md:text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-sm md:text-lg font-extrabold text-uin-primary tracking-tight">UIN AR-RANIRY BANDA ACEH</h1>
+                    <p class="text-[10px] md:text-xs font-medium text-slate-600">Sistem Pengumpulan Sertifikat Keahlian & Kompetensi</p>
                 </div>
             </div>
             <div id="nav-actions" class="flex items-center space-x-3">
-                <button onclick="openAdminLoginModal()" class="px-4 py-2 text-xs font-bold uppercase tracking-wider text-uin-primary bg-white/80 hover:bg-uin-primary hover:text-white border border-uin-primary/30 rounded-xl transition-all shadow-sm">
+                <button onclick="openAdminLoginModal()" class="px-3 md:px-4 py-2 text-[10px] md:text-xs font-bold uppercase tracking-wider text-uin-primary bg-white/80 hover:bg-uin-primary hover:text-white border border-uin-primary/30 rounded-xl transition-all shadow-sm">
                     <i class="fa-solid fa-shield-halved mr-1.5"></i> Login Admin
                 </button>
             </div>
@@ -151,7 +147,7 @@
                 <!-- Statistik Ringkas -->
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div class="glass-card p-6 rounded-3xl flex items-center space-x-4">
-                        <div class="w-14 h-14 rounded-2xl bg-emerald-100 text-uin-primary flex items-center justify-center text-2xl font-bold shadow-inner shrink-0">
+                        <div class="w-14 h-14 rounded-2xl bg-emerald-100 text-uin-primary flex items-center justify-center text-2xl font-bold shadow-inner">
                             <i class="fa-solid fa-users"></i>
                         </div>
                         <div>
@@ -160,7 +156,7 @@
                         </div>
                     </div>
                     <div class="glass-card p-6 rounded-3xl flex items-center space-x-4">
-                        <div class="w-14 h-14 rounded-2xl bg-teal-100 text-teal-800 flex items-center justify-center text-2xl font-bold shadow-inner shrink-0">
+                        <div class="w-14 h-14 rounded-2xl bg-teal-100 text-teal-800 flex items-center justify-center text-2xl font-bold shadow-inner">
                             <i class="fa-solid fa-building-columns"></i>
                         </div>
                         <div>
@@ -169,7 +165,7 @@
                         </div>
                     </div>
                     <div class="glass-card p-6 rounded-3xl flex items-center space-x-4">
-                        <div class="w-14 h-14 rounded-2xl bg-amber-100 text-amber-800 flex items-center justify-center text-2xl font-bold shadow-inner shrink-0">
+                        <div class="w-14 h-14 rounded-2xl bg-amber-100 text-amber-800 flex items-center justify-center text-2xl font-bold shadow-inner">
                             <i class="fa-solid fa-file-shield"></i>
                         </div>
                         <div>
@@ -180,8 +176,8 @@
                 </div>
 
                 <!-- Pengumuman Publik -->
-                <div class="glass-card p-6 md:p-8 rounded-3xl space-y-6">
-                    <h3 class="text-lg md:text-xl font-bold text-uin-primary flex items-center"><i class="fa-solid fa-bullhorn mr-3 text-amber-500"></i> Pengumuman Resmi & Informasi</h3>
+                <div class="glass-card p-8 rounded-3xl space-y-6">
+                    <h3 class="text-xl font-bold text-uin-primary flex items-center"><i class="fa-solid fa-bullhorn mr-3 text-amber-500"></i> Pengumuman Resmi & Informasi</h3>
                     <div id="public-announcements-list" class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <!-- Loaded dynamically -->
                     </div>
@@ -195,44 +191,44 @@
                     </div>
 
                     <!-- Form Login -->
-                    <form id="form-login" onsubmit="handleLogin(event)" class="space-y-4">
+                    <form id="form-login" onsubmit="handleLogin(event)" class="space-y-4" autocomplete="off">
                         <div>
                             <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Nomor Induk Pegawai (NIP)</label>
-                            <input type="text" id="login-nip" required placeholder="Contoh: 198501012015031001" class="w-full px-4 py-3 rounded-xl bg-white/60 border border-slate-200 focus:outline-none focus:ring-2 focus:ring-uin-primary text-sm">
+                            <input type="text" id="login-nip" required autocomplete="off" placeholder="Contoh: 198501012015031001" class="w-full px-4 py-3 rounded-xl bg-white/60 border border-slate-200 focus:outline-none focus:ring-2 focus:ring-uin-primary text-sm">
                         </div>
                         <div>
                             <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Kata Sandi</label>
-                            <input type="password" id="login-password" required placeholder="••••••••" class="w-full px-4 py-3 rounded-xl bg-white/60 border border-slate-200 focus:outline-none focus:ring-2 focus:ring-uin-primary text-sm">
+                            <input type="password" id="login-password" required autocomplete="new-password" placeholder="••••••••" class="w-full px-4 py-3 rounded-xl bg-white/60 border border-slate-200 focus:outline-none focus:ring-2 focus:ring-uin-primary text-sm">
                         </div>
-                        <button type="submit" class="w-full py-3.5 bg-uin-primary hover:bg-uin-secondary text-white font-bold rounded-xl shadow-lg transition-all text-sm">
+                        <button type="submit" class="w-full py-3.5 bg-uin-primary hover:bg-uin-secondary text-white font-bold rounded-xl shadow-lg transition-all">
                             MASUK KE DASHBOARD
                         </button>
                     </form>
 
                     <!-- Form Register -->
-                    <form id="form-register" onsubmit="handleRegister(event)" class="space-y-4 hidden">
+                    <form id="form-register" onsubmit="handleRegister(event)" class="space-y-4 hidden" autocomplete="off">
                         <div>
                             <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Nama Lengkap & Gelar</label>
-                            <input type="text" id="reg-nama" required placeholder="Dr. H. Zulkarnain, M.Ag." class="w-full px-3 py-2.5 rounded-xl bg-white/60 border border-slate-200 focus:outline-none focus:ring-2 focus:ring-uin-primary text-sm">
+                            <input type="text" id="reg-nama" required autocomplete="off" placeholder="Dr. H. Zulkarnain, M.Ag." class="w-full px-3 py-2.5 rounded-xl bg-white/60 border border-slate-200 focus:outline-none focus:ring-2 focus:ring-uin-primary text-sm">
                         </div>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                             <div>
                                 <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Nomor Induk Pegawai (NIP)</label>
-                                <input type="text" id="reg-nip" required placeholder="19850101..." class="w-full px-3 py-2.5 rounded-xl bg-white/60 border border-slate-200 focus:outline-none focus:ring-2 focus:ring-uin-primary text-sm">
+                                <input type="text" id="reg-nip" required autocomplete="off" placeholder="19850101..." class="w-full px-3 py-2.5 rounded-xl bg-white/60 border border-slate-200 focus:outline-none focus:ring-2 focus:ring-uin-primary text-sm">
                             </div>
                             <div>
                                 <label class="block text-xs font-bold text-slate-700 uppercase mb-1">WhatsApp Aktif</label>
-                                <input type="text" id="reg-wa" required placeholder="08526088xxxx" class="w-full px-3 py-2.5 rounded-xl bg-white/60 border border-slate-200 focus:outline-none focus:ring-2 focus:ring-uin-primary text-sm">
+                                <input type="text" id="reg-wa" required autocomplete="off" placeholder="08526088xxxx" class="w-full px-3 py-2.5 rounded-xl bg-white/60 border border-slate-200 focus:outline-none focus:ring-2 focus:ring-uin-primary text-sm">
                             </div>
                         </div>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                             <div>
                                 <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Email Resmi UIN</label>
-                                <input type="email" id="reg-email" required placeholder="nama@ar-raniry.ac.id" class="w-full px-3 py-2.5 rounded-xl bg-white/60 border border-slate-200 focus:outline-none focus:ring-2 focus:ring-uin-primary text-sm">
+                                <input type="email" id="reg-email" required autocomplete="off" placeholder="nama@ar-raniry.ac.id" class="w-full px-3 py-2.5 rounded-xl bg-white/60 border border-slate-200 focus:outline-none focus:ring-2 focus:ring-uin-primary text-sm">
                             </div>
                             <div>
                                 <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Kata Sandi Baru</label>
-                                <input type="password" id="reg-password" required placeholder="Minimal 6 karakter" class="w-full px-3 py-2.5 rounded-xl bg-white/60 border border-slate-200 focus:outline-none focus:ring-2 focus:ring-uin-primary text-sm">
+                                <input type="password" id="reg-password" required autocomplete="new-password" placeholder="Minimal 6 karakter" class="w-full px-3 py-2.5 rounded-xl bg-white/60 border border-slate-200 focus:outline-none focus:ring-2 focus:ring-uin-primary text-sm">
                             </div>
                         </div>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -267,7 +263,7 @@
                                 </select>
                             </div>
                         </div>
-                        <button type="submit" class="w-full py-3.5 bg-gradient-to-r from-uin-primary to-uin-secondary hover:opacity-95 text-white font-bold rounded-xl shadow-lg transition-all text-sm">
+                        <button type="submit" class="w-full py-3.5 bg-gradient-to-r from-uin-primary to-uin-secondary hover:opacity-95 text-white font-bold rounded-xl shadow-lg transition-all">
                             DAFTAR SEKARANG
                         </button>
                     </form>
@@ -288,7 +284,7 @@
                         <button onclick="openUploadModal()" class="px-5 py-3 bg-uin-primary hover:bg-uin-secondary text-white font-bold rounded-2xl shadow-lg transition-all flex items-center text-xs md:text-sm">
                             <i class="fa-solid fa-cloud-arrow-up mr-2"></i> Upload Sertifikat Baru
                         </button>
-                        <button onclick="logout()" class="px-4 py-3 bg-red-100 hover:bg-red-200 text-red-700 font-bold rounded-2xl transition-all text-xs md:text-sm">
+                        <button onclick="logout()" class="px-4 py-3 bg-red-100 hover:bg-red-200 text-red-700 font-bold rounded-2xl transition-all">
                             <i class="fa-solid fa-right-from-bracket"></i>
                         </button>
                     </div>
@@ -350,15 +346,15 @@
                         </div>
                         <p class="text-xs md:text-sm text-slate-600">Pusat kontrol validasi sertifikat, kelola pegawai, jadwal, laporan, dan pengumuman.</p>
                     </div>
-                    <div class="flex flex-wrap items-center gap-2 w-full md:w-auto justify-end">
+                    <div class="flex flex-wrap items-center gap-2">
                         <a href="https://docs.google.com/spreadsheets/d/1JUs07WljgRkFgKj5Bq3lPq54QF4-c1R8BUo8Rp7ySpQ/edit" target="_blank" class="px-4 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white font-bold rounded-xl transition-all text-xs flex items-center shadow">
-                            <i class="fa-solid fa-file-excel mr-1.5 text-emerald-300 text-sm"></i> Spreadsheet
+                            <i class="fa-solid fa-file-excel mr-1.5 text-emerald-300 text-sm"></i> Buka Spreadsheet
                         </a>
                         <a href="https://drive.google.com/drive/folders/1DVlR9lMRdIDDuEbqUVyVlAxypxNoUOLo" target="_blank" class="px-4 py-2.5 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-xl transition-all text-xs flex items-center shadow">
-                            <i class="fa-brands fa-google-drive mr-1.5 text-amber-200 text-sm"></i> Google Drive
+                            <i class="fa-brands fa-google-drive mr-1.5 text-amber-200 text-sm"></i> Buka Google Drive
                         </a>
                         <button onclick="logout()" class="px-4 py-2.5 bg-red-100 hover:bg-red-200 text-red-700 font-bold rounded-xl transition-all text-xs flex items-center">
-                            <i class="fa-solid fa-right-from-bracket mr-1.5"></i> Keluar
+                            <i class="fa-solid fa-right-from-bracket mr-1.5"></i> Keluar Admin
                         </button>
                     </div>
                 </div>
@@ -383,7 +379,7 @@
                             </div>
                         </div>
                         <div class="overflow-x-auto">
-                            <table class="w-full text-left text-xs whitespace-nowrap md:whitespace-normal">
+                            <table class="w-full text-left text-xs">
                                 <thead>
                                     <tr class="border-b border-slate-200 text-slate-500 font-bold uppercase">
                                         <th class="py-3 px-4">No</th>
@@ -414,7 +410,7 @@
                             </button>
                         </div>
                         <div class="overflow-x-auto">
-                            <table class="w-full text-left text-xs whitespace-nowrap md:whitespace-normal">
+                            <table class="w-full text-left text-xs">
                                 <thead>
                                     <tr class="border-b border-slate-200 text-slate-500 font-bold uppercase">
                                         <th class="py-3 px-4">NIP</th>
@@ -470,7 +466,7 @@
                             </div>
                         </div>
                         <div class="overflow-x-auto">
-                            <table class="w-full text-left text-xs border border-slate-200 whitespace-nowrap md:whitespace-normal">
+                            <table class="w-full text-left text-xs border border-slate-200">
                                 <thead>
                                     <tr class="bg-slate-100 text-slate-600 font-bold uppercase">
                                         <th class="py-2.5 px-3 border">NIP</th>
@@ -511,7 +507,7 @@
             <div class="container mx-auto px-4 max-w-7xl grid grid-cols-1 md:grid-cols-3 gap-8">
                 <div class="space-y-3">
                     <div class="flex items-center space-x-3">
-                        <div class="w-10 h-10 rounded-xl bg-uin-primary flex items-center justify-center text-white shrink-0">
+                        <div class="w-10 h-10 rounded-xl bg-uin-primary flex items-center justify-center text-white">
                             <i class="fa-solid fa-graduation-cap"></i>
                         </div>
                         <span class="font-extrabold text-white text-sm">UIN Ar-Raniry Banda Aceh</span>
@@ -596,13 +592,13 @@
             <form onsubmit="handleAdminLogin(event)" class="space-y-4" autocomplete="off">
                 <div>
                     <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Username Admin</label>
-                    <input type="text" id="admin-user" required autocomplete="off" placeholder="Username" class="w-full px-4 py-3 rounded-xl bg-white/60 border border-slate-200 text-sm focus:ring-2 focus:ring-uin-primary">
+                    <input type="text" id="admin-user" required value="" autocomplete="off" placeholder="Masukkan username" class="w-full px-4 py-3 rounded-xl bg-white/60 border border-slate-200 text-sm focus:ring-2 focus:ring-uin-primary">
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Password Admin</label>
-                    <input type="password" id="admin-pass" required autocomplete="new-password" placeholder="••••••••" class="w-full px-4 py-3 rounded-xl bg-white/60 border border-slate-200 text-sm focus:ring-2 focus:ring-uin-primary">
+                    <input type="password" id="admin-pass" required value="" autocomplete="new-password" placeholder="Masukkan password" class="w-full px-4 py-3 rounded-xl bg-white/60 border border-slate-200 text-sm focus:ring-2 focus:ring-uin-primary">
                 </div>
-                <button type="submit" class="w-full py-3.5 bg-amber-500 hover:bg-amber-600 text-amber-950 font-extrabold rounded-xl shadow-lg transition-all text-sm">
+                <button type="submit" class="w-full py-3.5 bg-amber-500 hover:bg-amber-600 text-amber-950 font-extrabold rounded-xl shadow-lg transition-all">
                     MASUK SEBAGAI ADMIN
                 </button>
             </form>
@@ -637,7 +633,7 @@
         </div>
     </div>
 
-    <!-- Announcement Edit/Add Modal (dengan upload file PDF/JPG/Word/Excel) -->
+    <!-- Announcement Edit/Add Modal -->
     <div id="modal-announcement" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 hidden">
         <div class="glass-modal w-full max-w-lg p-6 md:p-8 rounded-3xl space-y-6 relative">
             <button onclick="closeAnnouncementModal()" class="absolute right-6 top-6 w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-600"><i class="fa-solid fa-xmark"></i></button>
@@ -718,16 +714,6 @@
 
     <!-- JavaScript Application Logic -->
     <script>
-        // Supabase Configuration
-        const SUPABASE_URL = 'https://pxexrihqmuemrpepthjp.supabase.co';
-        const SUPABASE_ANON_KEY = 'sb_publishable_2yBws_0STCr4Tx3dMtHZVQ_lOGXJjFA';
-        let supabaseClient = null;
-        try {
-            if (window.supabase) {
-                supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-            }
-        } catch (e) { console.warn('Supabase init warning:', e); }
-
         const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwB-rMN2XMg3Hju19C9Pfn5QdTleWKFr0mUiqlGSHU3XGQHB1EKbPX4o454Rm3q-bhvrg/exec';
 
         let currentUser = null;
@@ -751,10 +737,31 @@
         // Initialize on load
         window.addEventListener('DOMContentLoaded', () => {
             initCountdown();
-            loadPublicAnnouncements();
+            loadCloudData();
             checkExistingSession();
-            fetchSystemStats();
         });
+
+        async function loadCloudData() {
+            try {
+                const response = await fetch(GAS_WEB_APP_URL + '?action=get_data');
+                const result = await response.json();
+                if (result.status === 'success') {
+                    if (result.pegawai && result.pegawai.length > 0) {
+                        localStorage.setItem('uin_local_users', JSON.stringify(result.pegawai));
+                    }
+                    if (result.sertifikat && result.sertifikat.length > 0) {
+                        localStorage.setItem('uin_local_certs', JSON.stringify(result.sertifikat));
+                    }
+                    if (result.announcements && result.announcements.length > 0) {
+                        localStorage.setItem('uin_local_announcements', JSON.stringify(result.announcements));
+                    }
+                }
+            } catch (e) {
+                console.warn('Using local cache fallback:', e);
+            }
+            loadPublicAnnouncements();
+            fetchSystemStats();
+        }
 
         // Countdown Timer
         function initCountdown() {
@@ -817,7 +824,6 @@
             }
         }
 
-        // Local-First Login & Register Fallback Storage
         function getLocalUsers() {
             const u = localStorage.getItem('uin_local_users');
             if (u) return JSON.parse(u);
@@ -833,16 +839,8 @@
             const nip = document.getElementById('login-nip').value.trim();
             const pass = document.getElementById('login-password').value.trim();
 
-            let foundUser = null;
             const localUsers = getLocalUsers();
-            foundUser = localUsers.find(u => u.nip === nip && u.password === pass);
-
-            if (!foundUser && supabaseClient) {
-                try {
-                    const { data } = await supabaseClient.from('pegawai').select('*').eq('nip', nip).single();
-                    if (data && data.password === pass) foundUser = data;
-                } catch (err) {}
-            }
+            const foundUser = localUsers.find(u => u.nip === nip && u.password === pass);
 
             if (!foundUser) {
                 showToast('NIP atau Kata Sandi salah!', 'error');
@@ -868,7 +866,6 @@
                 unit_kerja: document.getElementById('reg-unit').value
             };
 
-            // Local storage save
             let localUsers = getLocalUsers();
             if (localUsers.some(u => u.nip === payload.nip)) {
                 showToast('NIP tersebut sudah terdaftar!', 'error');
@@ -877,12 +874,6 @@
             localUsers.push(payload);
             localStorage.setItem('uin_local_users', JSON.stringify(localUsers));
 
-            // Background Supabase Sync
-            if (supabaseClient) {
-                supabaseClient.from('pegawai').insert([payload]).then(() => {}).catch(() => {});
-            }
-
-            // Background Google Sheets Sync
             fetch(GAS_WEB_APP_URL, {
                 method: 'POST',
                 mode: 'no-cors',
@@ -896,10 +887,11 @@
         }
 
         // Admin Login Modal
-        function openAdminLoginModal() { 
+        function openAdminLoginModal() {
+            // Clear inputs when opening modal so credentials don't carry over
             document.getElementById('admin-user').value = '';
             document.getElementById('admin-pass').value = '';
-            document.getElementById('modal-admin-login').classList.remove('hidden'); 
+            document.getElementById('modal-admin-login').classList.remove('hidden');
         }
         function closeAdminLoginModal() { document.getElementById('modal-admin-login').classList.add('hidden'); }
         
@@ -948,35 +940,17 @@
         }
 
         // Stats & Public Info
-        async function fetchSystemStats() {
+        function fetchSystemStats() {
             let userCount = getLocalUsers().length;
-            if (supabaseClient) {
-                try {
-                    const { count } = await supabaseClient.from('pegawai').select('*', { count: 'exact', head: true });
-                    if (count !== null) userCount = Math.max(userCount, count);
-                } catch(e) {}
-            }
             document.getElementById('stat-total-users').innerText = userCount;
 
             let certs = JSON.parse(localStorage.getItem('uin_local_certs') || '[]');
-            if (supabaseClient) {
-                try {
-                    const { data } = await supabaseClient.from('sertifikat').select('nip');
-                    if (data) certs = data;
-                } catch(e) {}
-            }
             const uniqueUnits = new Set(certs.map(c => c.nip));
             document.getElementById('stat-total-uploaded').innerText = `${uniqueUnits.size} / 15`;
         }
 
-        async function loadPublicAnnouncements() {
+        function loadPublicAnnouncements() {
             let announcements = JSON.parse(localStorage.getItem('uin_local_announcements') || '[]');
-            if (supabaseClient) {
-                try {
-                    const { data } = await supabaseClient.from('announcements').select('*').eq('status', 'published').order('created_at', { ascending: false });
-                    if (data && data.length > 0) announcements = data;
-                } catch(e) {}
-            }
             const published = announcements.filter(i => i.status === 'published');
             const container = document.getElementById('public-announcements-list');
             if (published.length === 0) {
@@ -997,14 +971,8 @@
         }
 
         // User Certificates
-        async function loadUserCertificates() {
+        function loadUserCertificates() {
             let allCerts = JSON.parse(localStorage.getItem('uin_local_certs') || '[]');
-            if (supabaseClient) {
-                try {
-                    const { data } = await supabaseClient.from('sertifikat').select('*').eq('nip', currentUser.nip);
-                    if (data) allCerts = data;
-                } catch(e) {}
-            }
             const userCerts = allCerts.filter(i => i.nip === currentUser.nip);
 
             const keahlianContainer = document.getElementById('list-keahlian');
@@ -1106,18 +1074,6 @@
                 localCerts.push(payload);
                 localStorage.setItem('uin_local_certs', JSON.stringify(localCerts));
 
-                if (supabaseClient) {
-                    supabaseClient.from('sertifikat').insert([{
-                        nip: payload.nip,
-                        kategori: payload.kategori,
-                        judul: payload.judul,
-                        tingkat: payload.tingkat,
-                        tahun: payload.tahun,
-                        file_url: base64Data,
-                        status: 'Pending'
-                    }]).then(() => {}).catch(() => {});
-                }
-
                 fetch(GAS_WEB_APP_URL, {
                     method: 'POST',
                     mode: 'no-cors',
@@ -1127,7 +1083,7 @@
 
                 closeUploadModal();
                 loadUserCertificates();
-                showToast('Berhasil mengunggah sertifikat & File URL tercatat di Spreadsheet!');
+                showToast('Berhasil mengunggah sertifikat & tercatat di Spreadsheet!');
             };
             if (file) reader.readAsDataURL(file);
         }
@@ -1136,9 +1092,6 @@
             let localCerts = JSON.parse(localStorage.getItem('uin_local_certs') || '[]');
             localCerts = localCerts.filter(i => i.id !== identifier && i.judul !== identifier);
             localStorage.setItem('uin_local_certs', JSON.stringify(localCerts));
-            if (supabaseClient) {
-                supabaseClient.from('sertifikat').delete().eq('id', identifier).then(() => {}).catch(() => {});
-            }
             loadUserCertificates();
             showToast('Sertifikat berhasil dihapus.');
         }
@@ -1153,17 +1106,9 @@
             document.getElementById(`adm-tab-${tab}`).className = 'px-4 py-2.5 rounded-xl font-bold text-xs bg-uin-primary text-white shadow-md transition-all whitespace-nowrap';
         }
 
-        async function loadAdminMonitoring() {
+        function loadAdminMonitoring() {
             let users = getLocalUsers();
             let certs = JSON.parse(localStorage.getItem('uin_local_certs') || '[]');
-            if (supabaseClient) {
-                try {
-                    const { data: uData } = await supabaseClient.from('pegawai').select('*');
-                    if (uData && uData.length > 0) users = uData;
-                    const { data: cData } = await supabaseClient.from('sertifikat').select('*');
-                    if (cData) certs = cData;
-                } catch(e) {}
-            }
 
             const tbody = document.getElementById('admin-participants-tbody');
             if (users.length === 0) {
@@ -1197,7 +1142,7 @@
             }).join('');
         }
 
-        async function openParticipantDetail(user) {
+        function openParticipantDetail(user) {
             selectedParticipantForDetail = user;
             document.getElementById('modal-part-name').innerText = user.nama;
             document.getElementById('modal-part-nip').innerText = user.nip;
@@ -1205,14 +1150,8 @@
             document.getElementById('modal-part-unit').innerText = user.unit_kerja || '-';
 
             let certs = JSON.parse(localStorage.getItem('uin_local_certs') || '[]').filter(c => c.nip === user.nip);
-            if (supabaseClient) {
-                try {
-                    const { data } = await supabaseClient.from('sertifikat').select('*').eq('nip', user.nip);
-                    if (data) certs = data;
-                } catch(e) {}
-            }
-
             const container = document.getElementById('modal-part-certificates-list');
+
             if (certs.length === 0) {
                 container.innerHTML = '<p class="text-xs text-slate-400 py-4 text-center">Peserta belum mengunggah sertifikat.</p>';
             } else {
@@ -1237,24 +1176,26 @@
 
         function closeParticipantDetailModal() { document.getElementById('modal-participant-detail').classList.add('hidden'); }
 
-        async function updateCertStatus(id, status) {
+        function updateCertStatus(id, status) {
             let localCerts = JSON.parse(localStorage.getItem('uin_local_certs') || '[]');
             localCerts = localCerts.map(c => { if (c.id === id || c.judul === id) c.status = status; return c; });
             localStorage.setItem('uin_local_certs', JSON.stringify(localCerts));
-            if (supabaseClient) {
-                supabaseClient.from('sertifikat').update({ status }).eq('id', id).then(() => {}).catch(() => {});
-            }
+            
+            fetch(GAS_WEB_APP_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ type: 'update_cert_status', id: id, status: status })
+            }).catch(() => {});
+
             showToast(`Status sertifikat diubah menjadi ${status}`);
             openParticipantDetail(selectedParticipantForDetail);
         }
 
-        async function deleteCertAdmin(id) {
+        function deleteCertAdmin(id) {
             let localCerts = JSON.parse(localStorage.getItem('uin_local_certs') || '[]');
             localCerts = localCerts.filter(c => c.id !== id && c.judul !== id);
             localStorage.setItem('uin_local_certs', JSON.stringify(localCerts));
-            if (supabaseClient) {
-                supabaseClient.from('sertifikat').delete().eq('id', id).then(() => {}).catch(() => {});
-            }
             showToast('Sertifikat berhasil dihapus.');
             openParticipantDetail(selectedParticipantForDetail);
         }
@@ -1277,14 +1218,8 @@
         }
 
         // Master DB Pegawai
-        async function loadAdminMasterDB() {
+        function loadAdminMasterDB() {
             let users = getLocalUsers();
-            if (supabaseClient) {
-                try {
-                    const { data } = await supabaseClient.from('pegawai').select('*');
-                    if (data && data.length > 0) users = data;
-                } catch(e) {}
-            }
             const tbody = document.getElementById('admin-master-tbody');
             if (users.length === 0) {
                 tbody.innerHTML = '<tr><td colspan="6" class="text-center py-6 text-slate-400">Tidak ada pegawai.</td></tr>';
@@ -1335,7 +1270,7 @@
 
         function closeEmployeeModal() { document.getElementById('modal-employee').classList.add('hidden'); }
 
-        async function handleEmployeeSubmit(e) {
+        function handleEmployeeSubmit(e) {
             e.preventDefault();
             const nip = document.getElementById('emp-nip').value.trim();
             const payload = {
@@ -1369,33 +1304,26 @@
             }
             localStorage.setItem('uin_local_users', JSON.stringify(localUsers));
 
-            if (supabaseClient) {
-                if (isEdit) {
-                    supabaseClient.from('pegawai').update(payload).eq('nip', nip).then(() => {}).catch(() => {});
-                } else {
-                    supabaseClient.from('pegawai').insert([payload]).then(() => {}).catch(() => {});
-                }
-            }
-
             closeEmployeeModal();
             loadAdminMasterDB();
             loadAdminMonitoring();
             showToast('Data pegawai berhasil disimpan!');
         }
 
-        async function deleteEmployee(nip) {
+        function deleteEmployee(nip) {
             if (!confirm(`Hapus pegawai dengan NIP ${nip} beserta seluruh sertifikatnya?`)) return;
             let localUsers = getLocalUsers().filter(u => u.nip !== nip);
             localStorage.setItem('uin_local_users', JSON.stringify(localUsers));
 
-            let localCerts = JSON.parse(localStorage.getItem('uin_local_certs') || '[]');
-            localCerts = localCerts.filter(c => c.nip !== nip);
+            let localCerts = JSON.parse(localStorage.getItem('uin_local_certs') || '[]').filter(c => c.nip !== nip);
             localStorage.setItem('uin_local_certs', JSON.stringify(localCerts));
 
-            if (supabaseClient) {
-                supabaseClient.from('sertifikat').delete().eq('nip', nip).then(() => {}).catch(() => {});
-                supabaseClient.from('pegawai').delete().eq('nip', nip).then(() => {}).catch(() => {});
-            }
+            fetch(GAS_WEB_APP_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ type: 'delete_pegawai', nip: nip })
+            }).catch(() => {});
 
             loadAdminMasterDB();
             loadAdminMonitoring();
@@ -1403,7 +1331,7 @@
         }
 
         // Reports
-        async function loadReportData() {
+        function loadReportData() {
             let users = getLocalUsers();
             let certs = JSON.parse(localStorage.getItem('uin_local_certs') || '[]');
             const tbody = document.getElementById('report-table-tbody');
@@ -1422,16 +1350,9 @@
             }).join('');
         }
 
-        // Announcements Management (CRUD + Publish/Unpublish + File Attachment)
-        async function loadAdminAnnouncements() {
+        // Announcements Management
+        function loadAdminAnnouncements() {
             let announcements = JSON.parse(localStorage.getItem('uin_local_announcements') || '[]');
-            if (supabaseClient) {
-                try {
-                    const { data } = await supabaseClient.from('announcements').select('*').order('created_at', { ascending: false });
-                    if (data) announcements = data;
-                } catch(e) {}
-            }
-
             const container = document.getElementById('admin-announcements-container');
             if (announcements.length === 0) {
                 container.innerHTML = '<p class="text-xs text-slate-500 italic text-center py-6">Belum ada pengumuman.</p>';
@@ -1478,7 +1399,7 @@
 
         function closeAnnouncementModal() { document.getElementById('modal-announcement').classList.add('hidden'); }
 
-        async function handleAnnouncementSubmit(e) {
+        function handleAnnouncementSubmit(e) {
             e.preventDefault();
             const id = document.getElementById('announcement-id').value;
             const title = document.getElementById('announcement-title').value.trim();
@@ -1513,14 +1434,12 @@
                 }
                 localStorage.setItem('uin_local_announcements', JSON.stringify(announcements));
 
-                if (supabaseClient) {
-                    const dbPayload = { title, content, status, file_url: payload.file_url, file_name: payload.file_name };
-                    if (id) {
-                        supabaseClient.from('announcements').update(dbPayload).eq('id', id).then(() => {}).catch(() => {});
-                    } else {
-                        supabaseClient.from('announcements').insert([dbPayload]).then(() => {}).catch(() => {});
-                    }
-                }
+                fetch(GAS_WEB_APP_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ type: 'save_announcement', ...payload })
+                }).catch(() => {});
 
                 closeAnnouncementModal();
                 loadAdminAnnouncements();
@@ -1539,30 +1458,29 @@
             }
         }
 
-        async function togglePublishAnnouncement(identifier, currentStatus) {
+        function togglePublishAnnouncement(identifier, currentStatus) {
             const nextStatus = currentStatus === 'published' ? 'draft' : 'published';
             let announcements = JSON.parse(localStorage.getItem('uin_local_announcements') || '[]');
             announcements = announcements.map(a => { if (a.id === identifier || a.title === identifier) a.status = nextStatus; return a; });
             localStorage.setItem('uin_local_announcements', JSON.stringify(announcements));
-
-            if (supabaseClient) {
-                supabaseClient.from('announcements').update({ status: nextStatus }).eq('id', identifier).then(() => {}).catch(() => {});
-            }
 
             loadAdminAnnouncements();
             loadPublicAnnouncements();
             showToast(`Status pengumuman diubah menjadi ${nextStatus}`);
         }
 
-        async function deleteAnnouncement(identifier) {
+        function deleteAnnouncement(identifier) {
             if (!confirm('Hapus pengumuman ini?')) return;
             let announcements = JSON.parse(localStorage.getItem('uin_local_announcements') || '[]');
             announcements = announcements.filter(a => a.id !== identifier && a.title !== identifier);
             localStorage.setItem('uin_local_announcements', JSON.stringify(announcements));
 
-            if (supabaseClient) {
-                supabaseClient.from('announcements').delete().eq('id', identifier).then(() => {}).catch(() => {});
-            }
+            fetch(GAS_WEB_APP_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ type: 'delete_announcement', id: identifier })
+            }).catch(() => {});
 
             loadAdminAnnouncements();
             loadPublicAnnouncements();

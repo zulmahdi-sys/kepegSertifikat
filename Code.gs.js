@@ -2,8 +2,11 @@
 // GOOGLE APPS SCRIPT BACKEND CODE (UIN Ar-Raniry Banda Aceh) - AUTO SETUP
 // ==============================================================================
 
+var SPREADSHEET_ID = '1JUs07WljgRkFgKj5Bq3lPq54QF4-c1R8BUo8Rp7ySpQ';
+var CERTIFICATE_FOLDER_ID = '1vs1DQlZYtzRpzJTdSM41kU8vmyJNf5uh';
+
 function doGet(e) {
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var ss = SpreadsheetApp.openById(SPREADSHEET_ID);
   var action = e && e.parameter && e.parameter.action;
   
   // 1. Pegawai Sheet
@@ -15,8 +18,11 @@ function doGet(e) {
   // 2. Sertifikat Sheet
   var sertifikatSheet = ss.getSheetByName('Sertifikat') || ss.insertSheet('Sertifikat');
   if (sertifikatSheet.getLastRow() === 0) {
-    sertifikatSheet.appendRow(['ID', 'NIP', 'Nama Pegawai', 'Unit Kerja', 'Kategori', 'Judul', 'Tingkat', 'Tahun', 'Status', 'Uploaded At', 'File URL']);
+    sertifikatSheet.appendRow(['ID', 'NIP', 'Nama Pegawai', 'Unit Kerja', 'Kategori', 'Judul', 'Instansi/Lembaga Penerbit', 'Peran pada Sertifikat', 'Tingkat', 'Tahun', 'Status', 'Uploaded At', 'File URL', 'Drive File ID']);
   }
+  ensureHeaderColumn(sertifikatSheet, 'Drive File ID');
+  ensureHeaderColumn(sertifikatSheet, 'Instansi/Lembaga Penerbit');
+  ensureHeaderColumn(sertifikatSheet, 'Peran pada Sertifikat');
   
   // 3. Announcements Sheet
   var announcementSheet = ss.getSheetByName('Announcements') || ss.insertSheet('Announcements');
@@ -45,7 +51,12 @@ function doGet(e) {
     var pegawai = sheetToJSON(pegawaiSheet);
     var sertifikat = sheetToJSON(sertifikatSheet);
     var announcements = sheetToJSON(announcementSheet);
-    var unit_kerja = sheetToJSON(unitSheet);
+    var unit_kerja = sheetToJSON(unitSheet).map(function(unit) {
+      return {
+        id: unit.ID,
+        nama_unit: unit['Nama Unit']
+      };
+    });
     
     return ContentService.createTextOutput(JSON.stringify({
       status: 'success',
@@ -61,9 +72,10 @@ function doGet(e) {
 }
 
 function doPost(e) {
+  var uploadedFile = null;
   try {
     var data = JSON.parse(e.postData.contents);
-    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    var ss = SpreadsheetApp.openById(SPREADSHEET_ID);
     
     if (data.type === 'register_pegawai') {
       var sheet = ss.getSheetByName('Pegawai') || ss.insertSheet('Pegawai');
@@ -73,34 +85,107 @@ function doPost(e) {
       // Password disimpan di Kolom I (index 9)
       sheet.appendRow([data.nip, data.nama, data.whatsapp, data.email, data.jabatan, data.unit_kerja, new Date(), data.role || 'user', data.password]);
     } 
+    else if (data.type === 'save_pegawai') {
+      var sheet = ss.getSheetByName('Pegawai') || ss.insertSheet('Pegawai');
+      if (sheet.getLastRow() === 0) {
+        sheet.appendRow(['NIP', 'Nama', 'WhatsApp', 'Email', 'Jabatan', 'Unit Kerja', 'Created At', 'Role', 'Password']);
+      }
+      var employeeRows = sheet.getDataRange().getValues();
+      var employeeHeaders = employeeRows[0];
+      var nipColumn = employeeHeaders.indexOf('NIP');
+      if (nipColumn < 0) throw new Error('Kolom NIP tidak ditemukan pada sheet Pegawai.');
+      var employeeRowIndex = -1;
+      for (var employeeIndex = 1; employeeIndex < employeeRows.length; employeeIndex++) {
+        if (String(employeeRows[employeeIndex][nipColumn]) === String(data.nip)) {
+          employeeRowIndex = employeeIndex + 1;
+          break;
+        }
+      }
+      var employeeValues = {
+        'NIP': data.nip,
+        'Nama': data.nama,
+        'WhatsApp': data.whatsapp,
+        'Email': data.email,
+        'Jabatan': data.jabatan,
+        'Unit Kerja': data.unit_kerja,
+        'Role': data.role || 'user'
+      };
+      if (data.password !== undefined && data.password !== '') employeeValues['Password'] = data.password;
+      if (employeeRowIndex > 0) {
+        employeeHeaders.forEach(function(header, columnIndex) {
+          if (employeeValues[header] !== undefined) {
+            sheet.getRange(employeeRowIndex, columnIndex + 1).setValue(employeeValues[header]);
+          }
+        });
+      } else {
+        employeeValues['Created At'] = new Date();
+        employeeValues['Password'] = data.password || '123456';
+        sheet.appendRow(employeeHeaders.map(function(header) {
+          return employeeValues[header] === undefined ? '' : employeeValues[header];
+        }));
+      }
+    }
     else if (data.type === 'upload_sertifikat') {
       var sheet = ss.getSheetByName('Sertifikat') || ss.insertSheet('Sertifikat');
       if (sheet.getLastRow() === 0) {
-        sheet.appendRow(['ID', 'NIP', 'Nama Pegawai', 'Unit Kerja', 'Kategori', 'Judul', 'Tingkat', 'Tahun', 'Status', 'Uploaded At', 'File URL']);
+        sheet.appendRow(['ID', 'NIP', 'Nama Pegawai', 'Unit Kerja', 'Kategori', 'Judul', 'Instansi/Lembaga Penerbit', 'Peran pada Sertifikat', 'Tingkat', 'Tahun', 'Status', 'Uploaded At', 'File URL', 'Drive File ID']);
       }
-      // Otomatis mencatat Tahun, Uploaded At, dan File URL dengan presisi
-      sheet.appendRow([
-        data.id || ('cert_' + Date.now()), 
-        data.nip, 
-        data.nama, 
-        data.unit_kerja || '-', 
-        data.kategori, 
-        data.judul, 
-        data.tingkat, 
-        data.tahun, 
-        data.status || 'Pending', 
-        new Date(), 
-        data.file_url || ''
-      ]);
+      ensureHeaderColumn(sheet, 'Drive File ID');
+      ensureHeaderColumn(sheet, 'Instansi/Lembaga Penerbit');
+      ensureHeaderColumn(sheet, 'Peran pada Sertifikat');
+      uploadedFile = saveCertificateFile(data);
+      var certificateHeaders = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+      var certificateRecord = {
+        'ID': data.id || ('cert_' + Date.now()),
+        'NIP': data.nip,
+        'Nama Pegawai': data.nama,
+        'Unit Kerja': data.unit_kerja || '-',
+        'Kategori': data.kategori,
+        'Judul': data.judul,
+        'Instansi/Lembaga Penerbit': data.instansi || '',
+        'Peran pada Sertifikat': data.peran || '',
+        'Tingkat': data.tingkat,
+        'Tahun': data.tahun,
+        'Status': data.status || 'Pending',
+        'Uploaded At': new Date(),
+        'File URL': uploadedFile.getUrl(),
+        'Drive File ID': uploadedFile.getId()
+      };
+      var certificateRow = certificateHeaders.map(function(header) {
+        return certificateRecord[header] === undefined ? '' : certificateRecord[header];
+      });
+      sheet.appendRow(certificateRow);
     }
     else if (data.type === 'update_cert_status') {
       var sheet = ss.getSheetByName('Sertifikat');
       if (sheet) {
         var rows = sheet.getDataRange().getValues();
+        var statusColumn = rows[0].indexOf('Status');
+        if (statusColumn < 0) {
+          throw new Error('Kolom Status tidak ditemukan pada sheet Sertifikat.');
+        }
         for (var i = 1; i < rows.length; i++) {
           if (rows[i][0] == data.id) {
-            sheet.getRange(i + 1, 9).setValue(data.status); // Status kolom ke-9
+            sheet.getRange(i + 1, statusColumn + 1).setValue(data.status);
             break;
+          }
+        }
+      }
+    }
+    else if (data.type === 'delete_sertifikat') {
+      var certSheet = ss.getSheetByName('Sertifikat');
+      if (certSheet && certSheet.getLastRow() > 1) {
+        var certRows = certSheet.getDataRange().getValues();
+        var driveFileIdColumn = certRows[0].indexOf('Drive File ID');
+        for (var certIndex = certRows.length - 1; certIndex >= 1; certIndex--) {
+          var matchesNip = !data.nip || String(certRows[certIndex][1]) === String(data.nip);
+          var matchesId = data.id && String(certRows[certIndex][0]) === String(data.id);
+          var matchesTitle = !data.id && data.judul && String(certRows[certIndex][5]) === String(data.judul);
+          if (matchesNip && (matchesId || matchesTitle)) {
+            if (driveFileIdColumn >= 0 && certRows[certIndex][driveFileIdColumn]) {
+              trashDriveFile(certRows[certIndex][driveFileIdColumn]);
+            }
+            certSheet.deleteRow(certIndex + 1);
           }
         }
       }
@@ -118,8 +203,12 @@ function doPost(e) {
       var certSheet = ss.getSheetByName('Sertifikat');
       if (certSheet && certSheet.getLastRow() > 1) {
         var cRows = certSheet.getDataRange().getValues();
+        var driveFileIdColumn = cRows[0].indexOf('Drive File ID');
         for (var j = cRows.length - 1; j >= 1; j--) {
           if (cRows[j][1] == data.nip) {
+            if (driveFileIdColumn >= 0 && cRows[j][driveFileIdColumn]) {
+              trashDriveFile(cRows[j][driveFileIdColumn]);
+            }
             certSheet.deleteRow(j + 1);
           }
         }
@@ -134,11 +223,11 @@ function doPost(e) {
       var found = false;
       for (var i = 1; i < rows.length; i++) {
         if (rows[i][0] == data.id) {
-          sheet.getRange(i + 1, 2).setValue(data.title);
-          sheet.getRange(i + 1, 3).setValue(data.content);
-          sheet.getRange(i + 1, 4).setValue(data.status);
-          sheet.getRange(i + 1, 5).setValue(data.file_url || '');
-          sheet.getRange(i + 1, 6).setValue(data.file_name || '');
+          if (data.title !== undefined) sheet.getRange(i + 1, 2).setValue(data.title);
+          if (data.content !== undefined) sheet.getRange(i + 1, 3).setValue(data.content);
+          if (data.status !== undefined) sheet.getRange(i + 1, 4).setValue(data.status);
+          if (data.file_url !== undefined) sheet.getRange(i + 1, 5).setValue(data.file_url);
+          if (data.file_name !== undefined) sheet.getRange(i + 1, 6).setValue(data.file_name);
           found = true;
           break;
         }
@@ -152,7 +241,9 @@ function doPost(e) {
       if (sheet) {
         var rows = sheet.getDataRange().getValues();
         for (var i = rows.length - 1; i >= 1; i--) {
-          if (rows[i][0] == data.id) {
+          var matchesAnnouncementId = data.id && String(rows[i][0]) === String(data.id);
+          var matchesAnnouncementTitle = !data.id && data.title && String(rows[i][1]) === String(data.title);
+          if (matchesAnnouncementId || matchesAnnouncementTitle) {
             sheet.deleteRow(i + 1);
           }
         }
@@ -170,7 +261,9 @@ function doPost(e) {
       if (sheet) {
         var rows = sheet.getDataRange().getValues();
         for (var i = rows.length - 1; i >= 1; i--) {
-          if (rows[i][0] == data.id || rows[i][1] == data.nama_unit) {
+          var matchesUnitId = data.id && String(rows[i][0]) === String(data.id);
+          var matchesUnitName = data.nama_unit && String(rows[i][1]) === String(data.nama_unit);
+          if (matchesUnitId || matchesUnitName) {
             sheet.deleteRow(i + 1);
           }
         }
@@ -180,8 +273,57 @@ function doPost(e) {
     return ContentService.createTextOutput(JSON.stringify({status: 'success'}))
       .setMimeType(ContentService.MimeType.JSON);
   } catch(err) {
+    if (uploadedFile) {
+      try {
+        uploadedFile.setTrashed(true);
+      } catch(cleanupError) {
+        console.error('Failed to clean up an incomplete certificate upload: ' + cleanupError);
+      }
+    }
     return ContentService.createTextOutput(JSON.stringify({status: 'error', message: err.toString()}))
       .setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+function saveCertificateFile(data) {
+  var match = /^data:(application\/pdf|image\/jpeg);base64,([A-Za-z0-9+/=]+)$/.exec(String(data.file_data || ''));
+  if (!match) {
+    throw new Error('File upload must contain a valid PDF or JPG data URL.');
+  }
+
+  var bytes = Utilities.base64Decode(match[2]);
+  if (bytes.length === 0 || bytes.length > 2 * 1024 * 1024) {
+    throw new Error('Certificate file must be no larger than 2 MB.');
+  }
+  var mimeType = match[1];
+  var isPdf = mimeType === 'application/pdf' &&
+    bytes.length >= 5 &&
+    bytes[0] === 37 && bytes[1] === 80 && bytes[2] === 68 && bytes[3] === 70 && bytes[4] === 45;
+  var isJpeg = mimeType === 'image/jpeg' &&
+    bytes.length >= 3 &&
+    (bytes[0] & 255) === 255 && (bytes[1] & 255) === 216 && (bytes[2] & 255) === 255;
+  if (!isPdf && !isJpeg) {
+    throw new Error('The selected file content does not match a PDF or JPG file.');
+  }
+
+  var fileName = String(data.file_name || 'sertifikat').replace(/[\\\/:*?"<>|]/g, '_').substring(0, 150);
+  var blob = Utilities.newBlob(bytes, mimeType, fileName);
+  return DriveApp.getFolderById(CERTIFICATE_FOLDER_ID).createFile(blob);
+}
+
+function trashDriveFile(fileId) {
+  DriveApp.getFileById(String(fileId)).setTrashed(true);
+}
+
+function ensureHeaderColumn(sheet, headerName) {
+  var lastColumn = sheet.getLastColumn();
+  if (lastColumn === 0) {
+    sheet.appendRow([headerName]);
+    return;
+  }
+  var headers = sheet.getRange(1, 1, 1, lastColumn).getValues()[0];
+  if (headers.indexOf(headerName) === -1) {
+    sheet.getRange(1, lastColumn + 1).setValue(headerName);
   }
 }
 

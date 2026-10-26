@@ -75,6 +75,36 @@
             0% { transform: translateX(100%); }
             100% { transform: translateX(-100%); }
         }
+        #report-print-heading { display: none; }
+        @media print {
+            @page { size: landscape; margin: 12mm; }
+            body.printing-report { background: #fff !important; color: #111827 !important; overflow: visible !important; }
+            body.printing-report .ambient-blob,
+            body.printing-report #toast-container,
+            body.printing-report #app > header,
+            body.printing-report #app > .bg-uin-primary,
+            body.printing-report #app > footer,
+            body.printing-report #app > main > *:not(#view-admin-dashboard),
+            body.printing-report #view-admin-dashboard > *:not(#adm-content-reports),
+            body.printing-report #report-print-card .report-controls { display: none !important; }
+            body.printing-report #app,
+            body.printing-report #app > main,
+            body.printing-report #view-admin-dashboard,
+            body.printing-report #adm-content-reports,
+            body.printing-report #report-print-card { display: block !important; width: 100% !important; max-width: none !important; min-height: 0 !important; margin: 0 !important; padding: 0 !important; overflow: visible !important; background: #fff !important; border: 0 !important; border-radius: 0 !important; box-shadow: none !important; }
+            body.printing-report #report-print-heading { display: block !important; text-align: center; margin-bottom: 18px; }
+            body.printing-report #report-print-heading h1 { font-size: 16pt; font-weight: 700; }
+            body.printing-report #report-print-heading h2 { font-size: 12pt; font-weight: 700; margin-top: 5px; }
+            body.printing-report #report-print-heading p { font-size: 9pt; margin-top: 4px; }
+            body.printing-report #report-table-wrapper { overflow: visible !important; }
+            body.printing-report #report-table { width: 100%; border-collapse: collapse; font-size: 9pt; }
+            body.printing-report #report-table th,
+            body.printing-report #report-table td { border: 1px solid #374151 !important; padding: 6px 8px !important; color: #111827 !important; vertical-align: top; }
+            body.printing-report #report-table th { background: #e5e7eb !important; font-weight: 700; text-align: center; }
+            body.printing-report #report-table tr { break-inside: avoid; }
+            body.printing-report .report-certificate-list { margin: 0; padding-left: 18px; }
+            body.printing-report .report-certificate-list li { margin-bottom: 4px; }
+        }
     </style>
 </head>
 <body class="bg-mesh font-sans text-slate-800 relative overflow-x-hidden">
@@ -476,31 +506,37 @@
 
                 <!-- Tab Content 5: Cetak Laporan & Arsip Bulanan -->
                 <div id="adm-content-reports" class="space-y-4 hidden">
-                    <div class="glass-card p-6 rounded-3xl space-y-4">
-                        <div class="flex justify-between items-center">
+                    <div id="report-print-card" class="glass-card p-6 rounded-3xl space-y-4">
+                        <div class="report-controls flex justify-between items-center">
                             <h3 class="font-bold text-slate-800 text-lg">Cetak Laporan & Arsip Bulanan</h3>
-                            <button onclick="window.print()" class="px-4 py-2 bg-uin-primary text-white font-bold rounded-xl text-xs shadow hover:bg-uin-secondary transition-all">
+                            <button onclick="printReport()" class="px-4 py-2 bg-uin-primary text-white font-bold rounded-xl text-xs shadow hover:bg-uin-secondary transition-all">
                                 <i class="fa-solid fa-print mr-1.5"></i> Cetak Dokumen Laporan
                             </button>
                         </div>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="report-controls grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Filter Arsip Bulan</label>
                                 <select id="report-month-filter" onchange="loadReportData()" class="w-full px-3 py-2 bg-white/70 border border-slate-200 rounded-xl text-xs">
-                                    <option value="all">Semua Bulan (2026)</option>
-                                    <option value="10">Oktober 2026</option>
-                                    <option value="09">September 2026</option>
+                                    <option value="all">Semua Bulan</option>
                                 </select>
                             </div>
                         </div>
-                        <div class="overflow-x-auto">
-                            <table class="w-full text-left text-xs border border-slate-200">
+                        <div id="report-print-heading">
+                            <h1>UNIVERSITAS ISLAM NEGERI AR-RANIRY BANDA ACEH</h1>
+                            <h2>LAPORAN REKAPITULASI PENGUMPULAN SERTIFIKAT</h2>
+                            <p id="report-period-heading"></p>
+                        </div>
+                        <div id="report-table-wrapper" class="overflow-x-auto">
+                            <table id="report-table" class="w-full text-left text-xs border border-slate-200">
                                 <thead>
                                     <tr class="bg-slate-100 text-slate-600 font-bold uppercase">
+                                        <th class="py-2.5 px-3 border text-center">No.</th>
                                         <th class="py-2.5 px-3 border">NIP</th>
                                         <th class="py-2.5 px-3 border">Nama Pegawai</th>
                                         <th class="py-2.5 px-3 border">Unit Kerja</th>
+                                        <th class="py-2.5 px-3 border">Nama Berkas / Sertifikat (Tingkat)</th>
                                         <th class="py-2.5 px-3 border text-center">Total Berkas</th>
+                                        <th class="py-2.5 px-3 border">Keterangan</th>
                                     </tr>
                                 </thead>
                                 <tbody id="report-table-tbody">
@@ -771,6 +807,8 @@
 
         let currentUser = null;
         let selectedParticipantForDetail = null;
+        let cloudDataLoading = false;
+        let cloudDataInitialized = false;
 
         // Toast Notification System
         function showToast(message, type = 'success') {
@@ -790,25 +828,45 @@
         // Initialize on load
         window.addEventListener('DOMContentLoaded', () => {
             initCountdown();
-            loadCloudData();
-            checkExistingSession();
+            loadCloudData().finally(checkExistingSession);
             window.setInterval(() => {
-                if (currentUser) loadCloudData(true);
-            }, 60000);
+                if (document.visibilityState === 'visible') loadCloudData(true);
+            }, 30000);
         });
 
         async function loadCloudData(silent = false) {
+            if (cloudDataLoading) return false;
+            cloudDataLoading = true;
             try {
                 const response = await fetch(`${GAS_WEB_APP_URL}?action=get_data&_=${Date.now()}`, { cache: 'no-store' });
                 if (!response.ok) throw new Error(`HTTP ${response.status}`);
                 const result = await response.json();
                 if (result.status !== 'success') throw new Error(result.message || 'API spreadsheet gagal');
+                let usersChanged = false;
+                let certificatesChanged = false;
+                let announcementsChanged = false;
+                let unitsChanged = false;
                 if (Array.isArray(result.pegawai)) {
-                    localStorage.setItem('uin_local_users', JSON.stringify(result.pegawai.map(normalizeSheetUser)));
+                    const users = JSON.stringify(result.pegawai.map(normalizeSheetUser));
+                    usersChanged = localStorage.getItem('uin_local_users') !== users;
+                    if (usersChanged) localStorage.setItem('uin_local_users', users);
                 }
-                if (Array.isArray(result.sertifikat)) localStorage.setItem('uin_local_certs', JSON.stringify(result.sertifikat.map(normalizeSheetCertificate)));
-                if (Array.isArray(result.announcements)) localStorage.setItem('uin_local_announcements', JSON.stringify(result.announcements.map(normalizeSheetAnnouncement)));
-                if (Array.isArray(result.unit_kerja)) localStorage.setItem('uin_local_units', JSON.stringify(result.unit_kerja.map(normalizeSheetUnit)));
+                if (Array.isArray(result.sertifikat)) {
+                    const certificates = JSON.stringify(result.sertifikat.map(normalizeSheetCertificate));
+                    certificatesChanged = localStorage.getItem('uin_local_certs') !== certificates;
+                    if (certificatesChanged) localStorage.setItem('uin_local_certs', certificates);
+                }
+                if (Array.isArray(result.announcements)) {
+                    const announcements = JSON.stringify(result.announcements.map(normalizeSheetAnnouncement));
+                    announcementsChanged = localStorage.getItem('uin_local_announcements') !== announcements;
+                    if (announcementsChanged) localStorage.setItem('uin_local_announcements', announcements);
+                }
+                if (Array.isArray(result.unit_kerja)) {
+                    const units = JSON.stringify(result.unit_kerja.map(normalizeSheetUnit));
+                    unitsChanged = localStorage.getItem('uin_local_units') !== units;
+                    if (unitsChanged) localStorage.setItem('uin_local_units', units);
+                }
+                const shouldRenderInitialData = !cloudDataInitialized;
                 if (currentUser && currentUser.role !== 'admin' &&
                     !result.pegawai.some(user => String(user.nip || user.NIP) === String(currentUser.nip))) {
                     currentUser = null;
@@ -817,25 +875,33 @@
                     document.getElementById('view-home').classList.remove('hidden');
                     showToast('Akun Anda telah dihapus dari spreadsheet. Silakan hubungi administrator.', 'error');
                 }
-                populateUnitDropdowns();
-                loadPublicAnnouncements();
-                fetchSystemStats();
+                if (unitsChanged || shouldRenderInitialData) populateUnitDropdowns();
+                if (announcementsChanged || shouldRenderInitialData) loadPublicAnnouncements();
+                if (usersChanged || certificatesChanged || unitsChanged || shouldRenderInitialData) fetchSystemStats();
                 if (currentUser && currentUser.role === 'admin') {
-                    loadAdminMonitoring();
-                    loadAdminMasterDB();
-                    loadAdminUnitsTable();
-                    loadAdminAnnouncements();
-                    loadReportData();
+                    if (usersChanged || certificatesChanged || shouldRenderInitialData) loadAdminMonitoring();
+                    if (usersChanged || shouldRenderInitialData) loadAdminMasterDB();
+                    if (unitsChanged || shouldRenderInitialData) loadAdminUnitsTable();
+                    if (announcementsChanged || shouldRenderInitialData) loadAdminAnnouncements();
+                    if (usersChanged || certificatesChanged || shouldRenderInitialData) loadReportData();
                 } else if (currentUser) {
-                    loadUserCertificates();
+                    if (certificatesChanged || shouldRenderInitialData) loadUserCertificates();
                 }
+                cloudDataInitialized = true;
                 return true;
             } catch (e) {
                 console.error('Gagal memuat data dari Google Sheets:', e);
                 if (!silent) showToast('Data spreadsheet tidak dapat dimuat. Periksa deployment Web App; aplikasi memakai cache lokal.', 'error');
                 return false;
+            } finally {
+                cloudDataLoading = false;
             }
         }
+
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'visible') loadCloudData(true);
+        });
+        window.addEventListener('focus', () => loadCloudData(true));
 
         function normalizeSheetUser(user) {
             return {
@@ -864,6 +930,7 @@
                 tingkat: certificate.tingkat || certificate.Tingkat || '',
                 tahun: certificate.tahun || certificate.Tahun || '',
                 status: certificate.status || certificate.Status || 'Pending',
+                uploaded_at: certificate.uploaded_at || certificate['Uploaded At'] || '',
                 file_url: certificate.file_url || certificate['File URL'] || ''
             };
         }
@@ -1077,12 +1144,7 @@
             localUsers.push(payload);
             localStorage.setItem('uin_local_users', JSON.stringify(localUsers));
 
-            fetch(GAS_WEB_APP_URL, {
-                method: 'POST',
-                mode: 'no-cors',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            }).catch(() => {});
+            if (!await sendCloudMutation(payload)) return;
 
             showToast('Pendaftaran berhasil! Silakan masuk.');
             switchAuthTab('login');
@@ -1333,6 +1395,7 @@
                     peran: peran,
                     tingkat: document.getElementById('upload-tingkat').value,
                     tahun: document.getElementById('upload-tahun').value,
+                    uploaded_at: new Date().toISOString(),
                     file_data: base64Data,
                     file_name: file ? file.name : 'sertifikat.pdf',
                     mime_type: file.type,
@@ -1465,18 +1528,14 @@
 
         function closeParticipantDetailModal() { document.getElementById('modal-participant-detail').classList.add('hidden'); }
 
-        function updateCertStatus(id, status) {
+        async function updateCertStatus(id, status) {
             let localCerts = JSON.parse(localStorage.getItem('uin_local_certs') || '[]');
             localCerts = localCerts.map(c => { if (c.id === id || c.judul === id) c.status = status; return c; });
             localStorage.setItem('uin_local_certs', JSON.stringify(localCerts));
-            
-            fetch(GAS_WEB_APP_URL, {
-                method: 'POST',
-                mode: 'no-cors',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ type: 'update_cert_status', id: id, status: status })
-            }).catch(() => {});
 
+            if (!await sendCloudMutation({ type: 'update_cert_status', id: id, status: status })) return;
+            await new Promise(resolve => window.setTimeout(resolve, 400));
+            await loadCloudData(true);
             showToast(`Status sertifikat diubah menjadi ${status}`);
             openParticipantDetail(selectedParticipantForDetail);
         }
@@ -1575,7 +1634,7 @@
 
         function closeEmployeeModal() { document.getElementById('modal-employee').classList.add('hidden'); }
 
-        function handleEmployeeSubmit(e) {
+        async function handleEmployeeSubmit(e) {
             e.preventDefault();
             const nip = document.getElementById('emp-nip').value.trim();
             const payload = {
@@ -1610,10 +1669,17 @@
             }
             localStorage.setItem('uin_local_users', JSON.stringify(localUsers));
 
+            payload.type = 'save_pegawai';
+            if (!await sendCloudMutation(payload)) return;
+            await new Promise(resolve => window.setTimeout(resolve, 400));
+            if (!await loadCloudData(true) || !getLocalUsers().some(user => user.nip === nip && user.nama === payload.nama)) {
+                showToast('Data pegawai tersimpan lokal, tetapi belum terverifikasi di spreadsheet.', 'error');
+                return;
+            }
             closeEmployeeModal();
             loadAdminMasterDB();
             loadAdminMonitoring();
-            showToast('Data pegawai berhasil disimpan!');
+            showToast('Data pegawai berhasil disimpan dan disinkronkan.');
         }
 
         async function deleteEmployee(nip) {
@@ -1656,7 +1722,7 @@
 
         function closeUnitModal() { document.getElementById('modal-unit').classList.add('hidden'); }
 
-        function handleUnitSubmit(e) {
+        async function handleUnitSubmit(e) {
             e.preventDefault();
             const namaUnit = document.getElementById('unit-nama-input').value.trim();
             if (!namaUnit) return;
@@ -1671,12 +1737,12 @@
             units.push(newUnit);
             localStorage.setItem('uin_local_units', JSON.stringify(units));
 
-            fetch(GAS_WEB_APP_URL, {
-                method: 'POST',
-                mode: 'no-cors',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ type: 'save_unit_kerja', ...newUnit })
-            }).catch(() => {});
+            if (!await sendCloudMutation({ type: 'save_unit_kerja', ...newUnit })) return;
+            await new Promise(resolve => window.setTimeout(resolve, 400));
+            if (!await loadCloudData(true) || !getLocalUnits().some(unit => unit.id === newUnit.id || unit.nama_unit === newUnit.nama_unit)) {
+                showToast('Unit berhasil ditambahkan lokal, tetapi belum terverifikasi di spreadsheet.', 'error');
+                return;
+            }
 
             closeUnitModal();
             loadAdminUnitsTable();
@@ -1703,21 +1769,87 @@
         }
 
         // Reports
+        function getReportUploadDate(certificate) {
+            const value = certificate.uploaded_at || certificate['Uploaded At'];
+            if (!value) return null;
+            const dateText = String(value);
+            const isoDate = dateText.match(/^(\d{4})-(\d{2})-(\d{2})/);
+            if (isoDate) return new Date(Number(isoDate[1]), Number(isoDate[2]) - 1, Number(isoDate[3]));
+            const parsed = new Date(value);
+            return Number.isNaN(parsed.getTime()) ? null : parsed;
+        }
+
+        function getReportMonthLabel(monthKey) {
+            const [year, month] = monthKey.split('-').map(Number);
+            return new Date(year, month - 1, 1).toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
+        }
+
         function loadReportData() {
-            let users = getLocalUsers();
-            let certs = JSON.parse(localStorage.getItem('uin_local_certs') || '[]');
+            const users = getLocalUsers();
+            const certs = JSON.parse(localStorage.getItem('uin_local_certs') || '[]');
             const tbody = document.getElementById('report-table-tbody');
-            tbody.innerHTML = users.map(u => {
-                const userCerts = certs.filter(c => c.nip === u.nip);
+            const monthFilter = document.getElementById('report-month-filter');
+            const selectedMonth = monthFilter.value;
+            const availableMonths = new Set(certs.map(certificate => {
+                const date = getReportUploadDate(certificate);
+                return date ? `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}` : '';
+            }).filter(Boolean));
+            const currentMonth = new Date();
+            availableMonths.add(`${currentMonth.getFullYear()}-${String(currentMonth.getMonth() + 1).padStart(2, '0')}`);
+            const monthOptions = Array.from(availableMonths).sort().reverse();
+            monthFilter.innerHTML = '<option value="all">Semua Bulan</option>' + monthOptions.map(month =>
+                `<option value="${month}">${escapeHtml(getReportMonthLabel(month))}</option>`
+            ).join('');
+            monthFilter.value = selectedMonth === 'all' || monthOptions.includes(selectedMonth) ? selectedMonth : 'all';
+
+            const filteredCerts = monthFilter.value === 'all' ? certs : certs.filter(certificate => {
+                const date = getReportUploadDate(certificate);
+                return date && `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}` === monthFilter.value;
+            });
+            const reportMonth = monthFilter.value === 'all' ? 'Semua Bulan' : getReportMonthLabel(monthFilter.value);
+            document.getElementById('report-period-heading').textContent = `Periode: ${reportMonth} | Dicetak: ${new Date().toLocaleDateString('id-ID')}`;
+            tbody.innerHTML = users.map((user, index) => {
+                const userCerts = filteredCerts.filter(certificate => String(certificate.nip) === String(user.nip));
+                const certificateList = userCerts.length
+                    ? `<ol class="report-certificate-list">${userCerts.map(certificate => {
+                        const title = escapeHtml(certificate.judul || certificate.Judul || 'Tanpa nama');
+                        const level = escapeHtml(certificate.tingkat || certificate.Tingkat || 'Tingkat tidak dicantumkan');
+                        const issuer = certificate.instansi || certificate['Instansi/Lembaga Penerbit'];
+                        const role = certificate.peran || certificate['Peran pada Sertifikat'];
+                        const details = [issuer && `Penerbit: ${escapeHtml(issuer)}`, role && `Peran: ${escapeHtml(role)}`].filter(Boolean).join(' | ');
+                        return `<li><strong>${title}</strong> — ${level}${details ? `<br><small>${details}</small>` : ''}</li>`;
+                    }).join('')}</ol>`
+                    : '-';
+                const statusCounts = userCerts.reduce((counts, certificate) => {
+                    const status = String(certificate.status || certificate.Status || 'Pending');
+                    counts[status] = (counts[status] || 0) + 1;
+                    return counts;
+                }, {});
+                const explanation = userCerts.length
+                    ? Object.entries(statusCounts).map(([status, count]) => `${escapeHtml(status)} (${count})`).join('; ')
+                    : 'Belum mengunggah berkas';
                 return `
                     <tr>
-                        <td class="py-2 px-3 border">${u.nip}</td>
-                        <td class="py-2 px-3 border font-bold">${u.nama}</td>
-                        <td class="py-2 px-3 border">${u.unit_kerja || '-'}</td>
+                        <td class="py-2 px-3 border text-center">${index + 1}</td>
+                        <td class="py-2 px-3 border">${escapeHtml(user.nip)}</td>
+                        <td class="py-2 px-3 border font-bold">${escapeHtml(user.nama)}</td>
+                        <td class="py-2 px-3 border">${escapeHtml(user.unit_kerja || '-')}</td>
+                        <td class="py-2 px-3 border">${certificateList}</td>
                         <td class="py-2 px-3 border text-center font-bold">${userCerts.length}</td>
+                        <td class="py-2 px-3 border">${explanation}</td>
                     </tr>
                 `;
             }).join('');
+            if (users.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" class="py-4 text-center text-slate-500">Belum ada data pegawai.</td></tr>';
+            }
+        }
+
+        function printReport() {
+            document.body.classList.add('printing-report');
+            window.addEventListener('afterprint', () => document.body.classList.remove('printing-report'), { once: true });
+            window.setTimeout(() => window.print(), 50);
+            window.setTimeout(() => document.body.classList.remove('printing-report'), 60000);
         }
 
         // Announcements Management
@@ -1769,7 +1901,7 @@
 
         function closeAnnouncementModal() { document.getElementById('modal-announcement').classList.add('hidden'); }
 
-        function handleAnnouncementSubmit(e) {
+        async function handleAnnouncementSubmit(e) {
             e.preventDefault();
             const id = document.getElementById('announcement-id').value;
             const title = document.getElementById('announcement-title').value.trim();
@@ -1778,7 +1910,7 @@
             const fileInput = document.getElementById('announcement-file');
             const file = fileInput.files[0];
 
-            const saveAnnouncementData = (fileUrl = null, fileName = null) => {
+            const saveAnnouncementData = async (fileUrl = null, fileName = null) => {
                 let announcements = JSON.parse(localStorage.getItem('uin_local_announcements') || '[]');
                 let payload = {
                     type: 'save_announcement',
@@ -1805,12 +1937,13 @@
                 }
                 localStorage.setItem('uin_local_announcements', JSON.stringify(announcements));
 
-                fetch(GAS_WEB_APP_URL, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                }).catch(() => {});
+                if (!await sendCloudMutation(payload)) return;
+                await new Promise(resolve => window.setTimeout(resolve, 400));
+                if (!await loadCloudData(true) || !JSON.parse(localStorage.getItem('uin_local_announcements') || '[]')
+                    .some(item => item.id === payload.id && item.title === payload.title && item.content === payload.content && item.status === payload.status)) {
+                    showToast('Pengumuman belum terverifikasi di spreadsheet.', 'error');
+                    return;
+                }
 
                 closeAnnouncementModal();
                 loadAdminAnnouncements();
@@ -1823,28 +1956,35 @@
                 reader.onload = function() {
                     saveAnnouncementData(reader.result, file.name);
                 };
+                reader.onerror = () => showToast('Lampiran pengumuman tidak dapat dibaca.', 'error');
                 reader.readAsDataURL(file);
             } else {
                 saveAnnouncementData();
             }
         }
 
-        function togglePublishAnnouncement(identifier, currentStatus) {
+        async function togglePublishAnnouncement(identifier, currentStatus) {
             const nextStatus = currentStatus === 'published' ? 'draft' : 'published';
             let announcements = JSON.parse(localStorage.getItem('uin_local_announcements') || '[]');
             announcements = announcements.map(a => { if (a.id === identifier || a.title === identifier) a.status = nextStatus; return a; });
             localStorage.setItem('uin_local_announcements', JSON.stringify(announcements));
 
-            fetch(GAS_WEB_APP_URL, {
-                method: 'POST',
-                mode: 'no-cors',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ type: 'save_announcement', id: identifier, status: nextStatus })
-            }).catch(() => {});
+            const announcement = announcements.find(item => item.id === identifier || item.title === identifier);
+            if (!await sendCloudMutation({
+                type: 'save_announcement',
+                id: announcement ? announcement.id : identifier,
+                status: nextStatus
+            })) return;
+            await new Promise(resolve => window.setTimeout(resolve, 400));
+            if (!await loadCloudData(true) || !JSON.parse(localStorage.getItem('uin_local_announcements') || '[]')
+                .some(item => item.id === (announcement ? announcement.id : identifier) && item.status === nextStatus)) {
+                showToast('Perubahan status belum terverifikasi di spreadsheet.', 'error');
+                return;
+            }
 
             loadAdminAnnouncements();
             loadPublicAnnouncements();
-            showToast(`Status pengumuman diubah menjadi ${nextStatus}`);
+            showToast(`Status pengumuman disinkronkan menjadi ${nextStatus}`);
         }
 
         async function deleteAnnouncement(identifier) {

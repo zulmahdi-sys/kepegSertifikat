@@ -1,36 +1,58 @@
 // ==============================================================================
-// GOOGLE APPS SCRIPT BACKEND CODE (UIN Ar-Raniry Banda Aceh)
+// GOOGLE APPS SCRIPT BACKEND CODE (UIN Ar-Raniry Banda Aceh) - AUTO SETUP
 // ==============================================================================
 
 function doGet(e) {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var action = e && e.parameter && e.parameter.action;
   
+  // 1. Pegawai Sheet
+  var pegawaiSheet = ss.getSheetByName('Pegawai') || ss.insertSheet('Pegawai');
+  if (pegawaiSheet.getLastRow() === 0) {
+    pegawaiSheet.appendRow(['NIP', 'Nama', 'WhatsApp', 'Email', 'Jabatan', 'Unit Kerja', 'Created At', 'Role', 'Password']);
+  }
+  
+  // 2. Sertifikat Sheet
+  var sertifikatSheet = ss.getSheetByName('Sertifikat') || ss.insertSheet('Sertifikat');
+  if (sertifikatSheet.getLastRow() === 0) {
+    sertifikatSheet.appendRow(['ID', 'NIP', 'Nama Pegawai', 'Unit Kerja', 'Kategori', 'Judul', 'Tingkat', 'Tahun', 'Status', 'Uploaded At', 'File URL']);
+  }
+  
+  // 3. Announcements Sheet
+  var announcementSheet = ss.getSheetByName('Announcements') || ss.insertSheet('Announcements');
+  if (announcementSheet.getLastRow() === 0) {
+    announcementSheet.appendRow(['ID', 'Title', 'Content', 'Status', 'File URL', 'File Name', 'Created At']);
+  }
+
+  // 4. UnitKerja Sheet
+  var unitSheet = ss.getSheetByName('UnitKerja') || ss.insertSheet('UnitKerja');
+  if (unitSheet.getLastRow() === 0) {
+    unitSheet.appendRow(['ID', 'Nama Unit']);
+    var defaultUnits = [
+      'Biro AUPK', 'Biro AAKK', 'Fakultas Syariah dan Hukum', 
+      'Fakultas Tarbiyah dan Keguruan', 'Fakultas Ushuluddin dan Filsafat', 
+      'Fakultas Dakwah dan Komunikasi', 'Fakultas Adab dan Humaniora', 
+      'Fakultas Ekonomi dan Bisnis Islam', 'Fakultas Sains dan Teknologi', 
+      'Fakultas Ilmu Sosial dan Ilmu Pemerintahan', 'Fakultas Psikologi', 
+      'Fakultas Kedokteran', 'Pascasarjana', 'Perpustakaan UIN'
+    ];
+    for (var u = 0; u < defaultUnits.length; u++) {
+      unitSheet.appendRow(['unit_' + (u + 1), defaultUnits[u]]);
+    }
+  }
+  
   if (action === 'get_data') {
-    var pegawaiSheet = ss.getSheetByName('Pegawai') || ss.insertSheet('Pegawai');
-    if (pegawaiSheet.getLastRow() === 0) {
-      pegawaiSheet.appendRow(['NIP', 'Nama', 'WhatsApp', 'Email', 'Jabatan', 'Unit Kerja', 'Created At', 'Role', 'Password']);
-    }
-    
-    var sertifikatSheet = ss.getSheetByName('Sertifikat') || ss.insertSheet('Sertifikat');
-    if (sertifikatSheet.getLastRow() === 0) {
-      sertifikatSheet.appendRow(['ID', 'NIP', 'Nama Pegawai', 'Unit Kerja', 'Kategori', 'Judul', 'Tingkat', 'Tahun', 'Status', 'Uploaded At', 'File URL']);
-    }
-    
-    var announcementSheet = ss.getSheetByName('Announcements') || ss.insertSheet('Announcements');
-    if (announcementSheet.getLastRow() === 0) {
-      announcementSheet.appendRow(['ID', 'Title', 'Content', 'Status', 'File URL', 'File Name', 'Created At']);
-    }
-    
     var pegawai = sheetToJSON(pegawaiSheet);
     var sertifikat = sheetToJSON(sertifikatSheet);
     var announcements = sheetToJSON(announcementSheet);
+    var unit_kerja = sheetToJSON(unitSheet);
     
     return ContentService.createTextOutput(JSON.stringify({
       status: 'success',
       pegawai: pegawai,
       sertifikat: sertifikat,
-      announcements: announcements
+      announcements: announcements,
+      unit_kerja: unit_kerja
     })).setMimeType(ContentService.MimeType.JSON);
   }
   
@@ -48,7 +70,7 @@ function doPost(e) {
       if (sheet.getLastRow() === 0) {
         sheet.appendRow(['NIP', 'Nama', 'WhatsApp', 'Email', 'Jabatan', 'Unit Kerja', 'Created At', 'Role', 'Password']);
       }
-      // Password di simpan di Kolom I (index 9)
+      // Password disimpan di Kolom I (index 9)
       sheet.appendRow([data.nip, data.nama, data.whatsapp, data.email, data.jabatan, data.unit_kerja, new Date(), data.role || 'user', data.password]);
     } 
     else if (data.type === 'upload_sertifikat') {
@@ -136,6 +158,24 @@ function doPost(e) {
         }
       }
     }
+    else if (data.type === 'save_unit_kerja') {
+      var sheet = ss.getSheetByName('UnitKerja') || ss.insertSheet('UnitKerja');
+      if (sheet.getLastRow() === 0) {
+        sheet.appendRow(['ID', 'Nama Unit']);
+      }
+      sheet.appendRow([data.id || ('unit_' + Date.now()), data.nama_unit]);
+    }
+    else if (data.type === 'delete_unit_kerja') {
+      var sheet = ss.getSheetByName('UnitKerja');
+      if (sheet) {
+        var rows = sheet.getDataRange().getValues();
+        for (var i = rows.length - 1; i >= 1; i--) {
+          if (rows[i][0] == data.id || rows[i][1] == data.nama_unit) {
+            sheet.deleteRow(i + 1);
+          }
+        }
+      }
+    }
     
     return ContentService.createTextOutput(JSON.stringify({status: 'success'}))
       .setMimeType(ContentService.MimeType.JSON);
@@ -160,6 +200,9 @@ function sheetToJSON(sheet) {
     }
     if (obj['Password'] !== undefined) {
       obj['password'] = obj['Password'];
+    }
+    if (obj['Nama Unit'] !== undefined) {
+      obj['nama_unit'] = obj['Nama Unit'];
     }
     data.push(obj);
   }

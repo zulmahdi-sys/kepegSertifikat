@@ -589,7 +589,7 @@
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Password Admin</label>
-                    <input type="password" id="admin-pass" required value="uinarratiry2026" class="w-full px-4 py-3 rounded-xl bg-white/60 border border-slate-200 text-sm focus:ring-2 focus:ring-uin-primary">
+                    <input type="password" id="admin-pass" required value="kepeg2026" class="w-full px-4 py-3 rounded-xl bg-white/60 border border-slate-200 text-sm focus:ring-2 focus:ring-uin-primary">
                 </div>
                 <button type="submit" class="w-full py-3.5 bg-amber-500 hover:bg-amber-600 text-amber-950 font-extrabold rounded-xl shadow-lg transition-all">
                     MASUK SEBAGAI ADMIN
@@ -767,3 +767,755 @@
         function saveScheduleDeadline() {
             const val = document.getElementById('admin-deadline-input').value;
             if (!val) {
+                showToast('Pilih tanggal dan waktu deadline terlebih dahulu!', 'error');
+                return;
+            }
+            localStorage.setItem('uin_custom_deadline', val + ':00');
+            showToast('Jadwal buka-tutup pengiriman berhasil diperbarui!');
+        }
+
+        // Auth Tabs
+        function switchAuthTab(tab) {
+            if (tab === 'login') {
+                document.getElementById('form-login').classList.remove('hidden');
+                document.getElementById('form-register').classList.add('hidden');
+                document.getElementById('tab-login-btn').className = 'flex-1 pb-3 text-sm font-bold text-uin-primary border-b-2 border-uin-primary transition-all';
+                document.getElementById('tab-register-btn').className = 'flex-1 pb-3 text-sm font-bold text-slate-400 hover:text-slate-600 transition-all';
+            } else {
+                document.getElementById('form-login').classList.add('hidden');
+                document.getElementById('form-register').classList.remove('hidden');
+                document.getElementById('tab-register-btn').className = 'flex-1 pb-3 text-sm font-bold text-uin-primary border-b-2 border-uin-primary transition-all';
+                document.getElementById('tab-login-btn').className = 'flex-1 pb-3 text-sm font-bold text-slate-400 hover:text-slate-600 transition-all';
+            }
+        }
+
+        function scrollToAuth() {
+            document.getElementById('auth-section').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Session
+        function checkExistingSession() {
+            const saved = localStorage.getItem('uin_current_user');
+            if (saved) {
+                currentUser = JSON.parse(saved);
+                if (currentUser.role === 'admin') {
+                    showAdminDashboard();
+                } else {
+                    showUserDashboard();
+                }
+            }
+        }
+
+        // Local-First Login & Register Fallback Storage
+        function getLocalUsers() {
+            const u = localStorage.getItem('uin_local_users');
+            if (u) return JSON.parse(u);
+            const defaults = [
+                { nip: '198501012015031001', nama: 'Dr. H. Zulkarnain, M.Ag.', whatsapp: '085260887091', email: 'zulkarnain@ar-raniry.ac.id', password: 'password123', jabatan: 'Dosen Lektor', unit_kerja: 'Fakultas Syariah dan Hukum' }
+            ];
+            localStorage.setItem('uin_local_users', JSON.stringify(defaults));
+            return defaults;
+        }
+
+        async function handleLogin(e) {
+            e.preventDefault();
+            const nip = document.getElementById('login-nip').value.trim();
+            const pass = document.getElementById('login-password').value.trim();
+
+            let foundUser = null;
+            const localUsers = getLocalUsers();
+            foundUser = localUsers.find(u => u.nip === nip && u.password === pass);
+
+            if (!foundUser && supabaseClient) {
+                try {
+                    const { data } = await supabaseClient.from('pegawai').select('*').eq('nip', nip).single();
+                    if (data && data.password === pass) foundUser = data;
+                } catch (err) {}
+            }
+
+            if (!foundUser) {
+                showToast('NIP atau Kata Sandi salah!', 'error');
+                return;
+            }
+
+            currentUser = foundUser;
+            currentUser.role = 'user';
+            localStorage.setItem('uin_current_user', JSON.stringify(currentUser));
+            showUserDashboard();
+            showToast('Berhasil masuk ke Dashboard!');
+        }
+
+        async function handleRegister(e) {
+            e.preventDefault();
+            const payload = {
+                nip: document.getElementById('reg-nip').value.trim(),
+                nama: document.getElementById('reg-nama').value.trim(),
+                whatsapp: document.getElementById('reg-wa').value.trim(),
+                email: document.getElementById('reg-email').value.trim(),
+                password: document.getElementById('reg-password').value.trim(),
+                jabatan: document.getElementById('reg-jabatan').value,
+                unit_kerja: document.getElementById('reg-unit').value
+            };
+
+            // Local storage save
+            let localUsers = getLocalUsers();
+            if (localUsers.some(u => u.nip === payload.nip)) {
+                showToast('NIP tersebut sudah terdaftar!', 'error');
+                return;
+            }
+            localUsers.push(payload);
+            localStorage.setItem('uin_local_users', JSON.stringify(localUsers));
+
+            // Background Supabase Sync
+            if (supabaseClient) {
+                supabaseClient.from('pegawai').insert([payload]).then(() => {}).catch(() => {});
+            }
+
+            // Background Google Sheets Sync
+            fetch(GAS_WEB_APP_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ type: 'register_pegawai', ...payload })
+            }).catch(() => {});
+
+            showToast('Pendaftaran berhasil! Silakan masuk.');
+            switchAuthTab('login');
+            document.getElementById('form-register').reset();
+        }
+
+        // Admin Login Modal
+        function openAdminLoginModal() { document.getElementById('modal-admin-login').classList.remove('hidden'); }
+        function closeAdminLoginModal() { document.getElementById('modal-admin-login').classList.add('hidden'); }
+        function handleAdminLogin(e) {
+            e.preventDefault();
+            const u = document.getElementById('admin-user').value;
+            const p = document.getElementById('admin-pass').value;
+            if (u === 'admin' && p === 'kepeg2026') {
+                currentUser = { role: 'admin', nama: 'Super Admin' };
+                localStorage.setItem('uin_current_user', JSON.stringify(currentUser));
+                closeAdminLoginModal();
+                showAdminDashboard();
+                showToast('Login Admin Berhasil!');
+            } else {
+                showToast('Kunci akses admin salah!', 'error');
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('uin_current_user');
+            currentUser = null;
+            window.location.reload();
+        }
+
+        // Dashboards
+        function showUserDashboard() {
+            document.getElementById('view-home').classList.add('hidden');
+            document.getElementById('view-admin-dashboard').classList.add('hidden');
+            document.getElementById('view-user-dashboard').classList.remove('hidden');
+            document.getElementById('user-welcome-name').innerText = `Selamat Datang, ${currentUser.nama}`;
+            document.getElementById('user-display-nip').innerText = `NIP: ${currentUser.nip}`;
+            document.getElementById('user-display-unit').innerText = currentUser.unit_kerja;
+            document.getElementById('user-display-jabatan').innerText = currentUser.jabatan;
+            loadUserCertificates();
+        }
+
+        function showAdminDashboard() {
+            document.getElementById('view-home').classList.add('hidden');
+            document.getElementById('view-user-dashboard').classList.add('hidden');
+            document.getElementById('view-admin-dashboard').classList.remove('hidden');
+            loadAdminMonitoring();
+            loadAdminMasterDB();
+            loadAdminAnnouncements();
+            loadReportData();
+        }
+
+        // Stats & Public Info
+        async function fetchSystemStats() {
+            let userCount = getLocalUsers().length;
+            if (supabaseClient) {
+                try {
+                    const { count } = await supabaseClient.from('pegawai').select('*', { count: 'exact', head: true });
+                    if (count !== null) userCount = Math.max(userCount, count);
+                } catch(e) {}
+            }
+            document.getElementById('stat-total-users').innerText = userCount;
+
+            let certs = JSON.parse(localStorage.getItem('uin_local_certs') || '[]');
+            if (supabaseClient) {
+                try {
+                    const { data } = await supabaseClient.from('sertifikat').select('nip');
+                    if (data) certs = data;
+                } catch(e) {}
+            }
+            const uniqueUnits = new Set(certs.map(c => c.nip));
+            document.getElementById('stat-total-uploaded').innerText = `${uniqueUnits.size} / 15`;
+        }
+
+        async function loadPublicAnnouncements() {
+            let announcements = JSON.parse(localStorage.getItem('uin_local_announcements') || '[]');
+            if (supabaseClient) {
+                try {
+                    const { data } = await supabaseClient.from('announcements').select('*').eq('status', 'published').order('created_at', { ascending: false });
+                    if (data && data.length > 0) announcements = data;
+                } catch(e) {}
+            }
+            const published = announcements.filter(i => i.status === 'published');
+            const container = document.getElementById('public-announcements-list');
+            if (published.length === 0) {
+                container.innerHTML = '<p class="text-xs text-slate-500 italic">Belum ada pengumuman aktif.</p>';
+                return;
+            }
+            container.innerHTML = published.map(item => `
+                <div class="bg-white/70 p-5 rounded-2xl border border-slate-100 shadow-sm space-y-2">
+                    <div class="flex justify-between items-center text-xs text-slate-400">
+                        <span><i class="fa-regular fa-calendar mr-1"></i> ${new Date(item.created_at || Date.now()).toLocaleDateString('id-ID')}</span>
+                        <span class="px-2 py-0.5 bg-emerald-100 text-emerald-800 font-bold rounded">Resmi</span>
+                    </div>
+                    <h4 class="font-bold text-slate-900 text-sm">${item.title}</h4>
+                    <p class="text-xs text-slate-600">${item.content}</p>
+                    ${item.file_url ? `<div class="mt-2 pt-2 border-t border-slate-100"><a href="${item.file_url}" target="_blank" download="${item.file_name || 'lampiran'}" class="inline-flex items-center px-3 py-1.5 bg-emerald-50 text-uin-primary text-xs font-bold rounded-xl border border-emerald-200 hover:bg-emerald-100 transition-all shadow-sm"><i class="fa-solid fa-paperclip mr-1.5 text-amber-500"></i> ${item.file_name || 'Unduh Lampiran Berkas'}</a></div>` : ''}
+                </div>
+            `).join('');
+        }
+
+        // User Certificates
+        async function loadUserCertificates() {
+            let allCerts = JSON.parse(localStorage.getItem('uin_local_certs') || '[]');
+            if (supabaseClient) {
+                try {
+                    const { data } = await supabaseClient.from('sertifikat').select('*').eq('nip', currentUser.nip);
+                    if (data) allCerts = data;
+                } catch(e) {}
+            }
+            const userCerts = allCerts.filter(i => i.nip === currentUser.nip);
+
+            const keahlianContainer = document.getElementById('list-keahlian');
+            const kompetensiContainer = document.getElementById('list-kompetensi');
+            const arsipContainer = document.getElementById('list-arsip');
+
+            const keahlian = userCerts.filter(i => i.kategori === 'Sertifikat Keahlian');
+            const kompetensi = userCerts.filter(i => i.kategori === 'Sertifikat Kompetensi');
+            const approved = userCerts.filter(i => i.status === 'Disetujui');
+
+            document.getElementById('count-keahlian').innerText = `${keahlian.length} File`;
+            document.getElementById('count-kompetensi').innerText = `${kompetensi.length} File`;
+            document.getElementById('count-arsip').innerText = `${approved.length} Arsip`;
+
+            renderCertList(keahlianContainer, keahlian);
+            renderCertList(kompetensiContainer, kompetensi);
+            renderCertList(arsipContainer, approved);
+        }
+
+        function renderCertList(container, items) {
+            if (items.length === 0) {
+                container.innerHTML = '<p class="text-xs text-slate-400 text-center py-6">Belum ada berkas.</p>';
+                return;
+            }
+            container.innerHTML = items.map(item => `
+                <div class="p-3 rounded-xl bg-white/80 border border-slate-200/60 flex items-center justify-between text-xs">
+                    <div>
+                        <p class="font-bold text-slate-800 line-clamp-1">${item.judul}</p>
+                        <p class="text-[10px] text-slate-500">${item.tingkat} • ${item.tahun} (${item.status || 'Pending'})</p>
+                    </div>
+                    <div class="flex items-center space-x-1.5">
+                        <a href="${item.file_url}" target="_blank" class="w-7 h-7 rounded-lg bg-emerald-100 text-uin-primary flex items-center justify-center hover:bg-emerald-200"><i class="fa-solid fa-eye"></i></a>
+                        <button onclick="deleteCertificate('${item.id || item.judul}')" class="w-7 h-7 rounded-lg bg-red-100 text-red-600 flex items-center justify-center hover:bg-red-200"><i class="fa-solid fa-trash"></i></button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function openUploadModal() { document.getElementById('modal-upload').classList.remove('hidden'); }
+        function closeUploadModal() { document.getElementById('modal-upload').classList.add('hidden'); }
+
+        async function handleUploadSubmit(e) {
+            e.preventDefault();
+            const fileInput = document.getElementById('upload-file');
+            const file = fileInput.files[0];
+            if (file && file.size > 2 * 1024 * 1024) {
+                showToast('Ukuran file maksimal 2MB!', 'error');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = async function() {
+                const base64Data = reader.result;
+                const payload = {
+                    id: 'cert_' + Date.now(),
+                    nip: currentUser.nip,
+                    nama: currentUser.nama,
+                    kategori: document.getElementById('upload-kategori').value,
+                    judul: document.getElementById('upload-judul').value,
+                    tingkat: document.getElementById('upload-tingkat').value,
+                    tahun: document.getElementById('upload-tahun').value,
+                    file_url: base64Data,
+                    file_name: file ? file.name : 'sertifikat.pdf',
+                    status: 'Pending'
+                };
+
+                let localCerts = JSON.parse(localStorage.getItem('uin_local_certs') || '[]');
+                localCerts.push(payload);
+                localStorage.setItem('uin_local_certs', JSON.stringify(localCerts));
+
+                if (supabaseClient) {
+                    supabaseClient.from('sertifikat').insert([{
+                        nip: payload.nip,
+                        kategori: payload.kategori,
+                        judul: payload.judul,
+                        tingkat: payload.tingkat,
+                        tahun: payload.tahun,
+                        file_url: base64Data,
+                        status: 'Pending'
+                    }]).then(() => {}).catch(() => {});
+                }
+
+                fetch(GAS_WEB_APP_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ type: 'upload_sertifikat', ...payload })
+                }).catch(() => {});
+
+                closeUploadModal();
+                loadUserCertificates();
+                showToast('Berhasil mengunggah sertifikat!');
+            };
+            if (file) reader.readAsDataURL(file);
+        }
+
+        async function deleteCertificate(identifier) {
+            let localCerts = JSON.parse(localStorage.getItem('uin_local_certs') || '[]');
+            localCerts = localCerts.filter(i => i.id !== identifier && i.judul !== identifier);
+            localStorage.setItem('uin_local_certs', JSON.stringify(localCerts));
+            if (supabaseClient) {
+                supabaseClient.from('sertifikat').delete().eq('id', identifier).then(() => {}).catch(() => {});
+            }
+            loadUserCertificates();
+            showToast('Sertifikat berhasil dihapus.');
+        }
+
+        // Admin Tabs & Management
+        function switchAdminTab(tab) {
+            ['monitoring', 'master', 'schedule', 'reports', 'announcements'].forEach(t => {
+                document.getElementById(`adm-content-${t}`).classList.add('hidden');
+                document.getElementById(`adm-tab-${t}`).className = 'px-4 py-2.5 rounded-xl font-bold text-xs bg-white/60 text-slate-700 hover:bg-white transition-all whitespace-nowrap';
+            });
+            document.getElementById(`adm-content-${tab}`).classList.remove('hidden');
+            document.getElementById(`adm-tab-${tab}`).className = 'px-4 py-2.5 rounded-xl font-bold text-xs bg-uin-primary text-white shadow-md transition-all whitespace-nowrap';
+        }
+
+        async function loadAdminMonitoring() {
+            let users = getLocalUsers();
+            let certs = JSON.parse(localStorage.getItem('uin_local_certs') || '[]');
+            if (supabaseClient) {
+                try {
+                    const { data: uData } = await supabaseClient.from('pegawai').select('*');
+                    if (uData && uData.length > 0) users = uData;
+                    const { data: cData } = await supabaseClient.from('sertifikat').select('*');
+                    if (cData) certs = cData;
+                } catch(e) {}
+            }
+
+            const tbody = document.getElementById('admin-participants-tbody');
+            if (users.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="8" class="text-center py-6 text-slate-400">Belum ada peserta terdaftar.</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = users.map((u, idx) => {
+                const userCerts = certs.filter(c => c.nip === u.nip);
+                let totalPoin = userCerts.reduce((acc, c) => {
+                    let p = c.tingkat === 'Internasional' ? 100 : c.tingkat === 'Nasional' ? 75 : c.tingkat === 'Regional' ? 50 : 25;
+                    return acc + p;
+                }, 0);
+
+                let statusBadge = userCerts.length > 0 ? '<span class="px-2 py-1 bg-emerald-100 text-emerald-800 rounded font-bold">Lengkap</span>' : '<span class="px-2 py-1 bg-amber-100 text-amber-800 rounded font-bold">Belum</span>';
+
+                return `
+                    <tr class="hover:bg-white/50 transition-all">
+                        <td class="py-3 px-4 font-bold">${idx + 1}</td>
+                        <td class="py-3 px-4 font-bold text-slate-900">${u.nama}<br><span class="text-[10px] text-slate-500 font-normal">NIP: ${u.nip}</span></td>
+                        <td class="py-3 px-4">WA: ${u.whatsapp || '-'}<br><span class="text-[10px] text-slate-500">${u.email || '-'}</span></td>
+                        <td class="py-3 px-4">${u.jabatan || '-'}<br><span class="text-[10px] text-slate-500">${u.unit_kerja || '-'}</span></td>
+                        <td class="py-3 px-4 text-center font-bold text-uin-primary">${userCerts.length}</td>
+                        <td class="py-3 px-4 text-center font-extrabold text-amber-700">${totalPoin} Poin</td>
+                        <td class="py-3 px-4 text-center">${statusBadge}</td>
+                        <td class="py-3 px-4 text-center space-x-1">
+                            <button onclick='openParticipantDetail(${JSON.stringify(u)})' class="px-3 py-1.5 bg-emerald-100 text-uin-primary hover:bg-emerald-200 rounded-lg font-bold">Detail Drive</button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        async function openParticipantDetail(user) {
+            selectedParticipantForDetail = user;
+            document.getElementById('modal-part-name').innerText = user.nama;
+            document.getElementById('modal-part-nip').innerText = user.nip;
+            document.getElementById('modal-part-wa').innerText = user.whatsapp || '-';
+            document.getElementById('modal-part-unit').innerText = user.unit_kerja || '-';
+
+            let certs = JSON.parse(localStorage.getItem('uin_local_certs') || '[]').filter(c => c.nip === user.nip);
+            if (supabaseClient) {
+                try {
+                    const { data } = await supabaseClient.from('sertifikat').select('*').eq('nip', user.nip);
+                    if (data) certs = data;
+                } catch(e) {}
+            }
+
+            const container = document.getElementById('modal-part-certificates-list');
+            if (certs.length === 0) {
+                container.innerHTML = '<p class="text-xs text-slate-400 py-4 text-center">Peserta belum mengunggah sertifikat.</p>';
+            } else {
+                container.innerHTML = certs.map(c => `
+                    <div class="p-3 bg-white border border-slate-200 rounded-xl flex items-center justify-between text-xs">
+                        <div>
+                            <p class="font-bold text-slate-900">${c.judul}</p>
+                            <p class="text-[10px] text-slate-500">${c.kategori} • ${c.tingkat} • ${c.tahun} | Status: <strong class="text-emerald-700">${c.status || 'Pending'}</strong></p>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <a href="${c.file_url}" target="_blank" class="px-2.5 py-1.5 bg-emerald-100 text-uin-primary font-bold rounded-lg"><i class="fa-solid fa-eye"></i></a>
+                            <button onclick="updateCertStatus('${c.id || c.judul}', 'Disetujui')" class="px-2.5 py-1.5 bg-emerald-600 text-white font-bold rounded-lg">Setuju</button>
+                            <button onclick="updateCertStatus('${c.id || c.judul}', 'Ditolak')" class="px-2.5 py-1.5 bg-amber-500 text-white font-bold rounded-lg">Tolak</button>
+                            <button onclick="deleteCertAdmin('${c.id || c.judul}')" class="px-2.5 py-1.5 bg-red-600 text-white font-bold rounded-lg"><i class="fa-solid fa-trash"></i></button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            document.getElementById('modal-participant-detail').classList.remove('hidden');
+        }
+
+        function closeParticipantDetailModal() { document.getElementById('modal-participant-detail').classList.add('hidden'); }
+
+        async function updateCertStatus(id, status) {
+            let localCerts = JSON.parse(localStorage.getItem('uin_local_certs') || '[]');
+            localCerts = localCerts.map(c => { if (c.id === id || c.judul === id) c.status = status; return c; });
+            localStorage.setItem('uin_local_certs', JSON.stringify(localCerts));
+            if (supabaseClient) {
+                supabaseClient.from('sertifikat').update({ status }).eq('id', id).then(() => {}).catch(() => {});
+            }
+            showToast(`Status sertifikat diubah menjadi ${status}`);
+            openParticipantDetail(selectedParticipantForDetail);
+        }
+
+        async function deleteCertAdmin(id) {
+            let localCerts = JSON.parse(localStorage.getItem('uin_local_certs') || '[]');
+            localCerts = localCerts.filter(c => c.id !== id && c.judul !== id);
+            localStorage.setItem('uin_local_certs', JSON.stringify(localCerts));
+            if (supabaseClient) {
+                supabaseClient.from('sertifikat').delete().eq('id', id).then(() => {}).catch(() => {});
+            }
+            showToast('Sertifikat berhasil dihapus.');
+            openParticipantDetail(selectedParticipantForDetail);
+        }
+
+        function sendRevisionNotification() {
+            const msg = document.getElementById('admin-revision-msg').value.trim();
+            if (!msg) {
+                showToast('Mohon tuliskan pesan kendala terlebih dahulu!', 'error');
+                return;
+            }
+            const waNumber = selectedParticipantForDetail.whatsapp.replace(/[^0-9]/g, '');
+            const url = `https://wa.me/${waNumber}?text=${encodeURIComponent(`Halo ${selectedParticipantForDetail.nama}, terkait pengumpulan berkas sertifikat Anda di Sistem UIN Ar-Raniry: ${msg}`)}`;
+            window.open(url, '_blank');
+            showToast('Membuka WhatsApp untuk mengirim pesan kendala.');
+        }
+
+        // Master DB Pegawai
+        async function loadAdminMasterDB() {
+            let users = getLocalUsers();
+            if (supabaseClient) {
+                try {
+                    const { data } = await supabaseClient.from('pegawai').select('*');
+                    if (data && data.length > 0) users = data;
+                } catch(e) {}
+            }
+            const tbody = document.getElementById('admin-master-tbody');
+            if (users.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="text-center py-6 text-slate-400">Tidak ada pegawai.</td></tr>';
+                return;
+            }
+            tbody.innerHTML = users.map(u => `
+                <tr class="hover:bg-white/50">
+                    <td class="py-3 px-4 font-bold">${u.nip}</td>
+                    <td class="py-3 px-4 font-bold text-slate-900">${u.nama}</td>
+                    <td class="py-3 px-4">${u.jabatan || '-'}</td>
+                    <td class="py-3 px-4">${u.unit_kerja || '-'}</td>
+                    <td class="py-3 px-4">WA: ${u.whatsapp || '-'}<br>${u.email || '-'}</td>
+                    <td class="py-3 px-4 text-center space-x-1">
+                        <button onclick='openEditEmployeeModal(${JSON.stringify(u)})' class="px-2.5 py-1.5 bg-blue-100 text-blue-700 rounded font-bold"><i class="fa-solid fa-pen"></i></button>
+                        <button onclick="deleteEmployee('${u.nip}')" class="px-2.5 py-1.5 bg-red-100 text-red-700 rounded font-bold"><i class="fa-solid fa-trash"></i></button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function openAddEmployeeModal() {
+            document.getElementById('employee-modal-title').innerText = 'Tambah Pegawai Baru';
+            document.getElementById('emp-edit-id').value = '';
+            document.getElementById('emp-nip').value = '';
+            document.getElementById('emp-nip').disabled = false;
+            document.getElementById('emp-nama').value = '';
+            document.getElementById('emp-wa').value = '';
+            document.getElementById('emp-email').value = '';
+            document.getElementById('emp-jabatan').value = '';
+            document.getElementById('emp-unit').value = '';
+            document.getElementById('emp-password').value = '';
+            document.getElementById('modal-employee').classList.remove('hidden');
+        }
+
+        function openEditEmployeeModal(u) {
+            document.getElementById('employee-modal-title').innerText = 'Edit Data Pegawai';
+            document.getElementById('emp-edit-id').value = u.nip;
+            document.getElementById('emp-nip').value = u.nip;
+            document.getElementById('emp-nip').disabled = true;
+            document.getElementById('emp-nama').value = u.nama;
+            document.getElementById('emp-wa').value = u.whatsapp || '';
+            document.getElementById('emp-email').value = u.email || '';
+            document.getElementById('emp-jabatan').value = u.jabatan || '';
+            document.getElementById('emp-unit').value = u.unit_kerja || '';
+            document.getElementById('emp-password').value = '';
+            document.getElementById('modal-employee').classList.remove('hidden');
+        }
+
+        function closeEmployeeModal() { document.getElementById('modal-employee').classList.add('hidden'); }
+
+        async function handleEmployeeSubmit(e) {
+            e.preventDefault();
+            const nip = document.getElementById('emp-nip').value.trim();
+            const payload = {
+                nip: nip,
+                nama: document.getElementById('emp-nama').value.trim(),
+                whatsapp: document.getElementById('emp-wa').value.trim(),
+                email: document.getElementById('emp-email').value.trim(),
+                jabatan: document.getElementById('emp-jabatan').value.trim(),
+                unit_kerja: document.getElementById('emp-unit').value.trim()
+            };
+            const pass = document.getElementById('emp-password').value.trim();
+            if (pass) payload.password = pass;
+
+            let localUsers = getLocalUsers();
+            const isEdit = document.getElementById('emp-edit-id').value !== '';
+            if (isEdit) {
+                localUsers = localUsers.map(u => {
+                    if (u.nip === nip) {
+                        payload.password = pass || u.password;
+                        return payload;
+                    }
+                    return u;
+                });
+            } else {
+                if (localUsers.some(u => u.nip === nip)) {
+                    showToast('NIP sudah terdaftar!', 'error');
+                    return;
+                }
+                payload.password = pass || '123456';
+                localUsers.push(payload);
+            }
+            localStorage.setItem('uin_local_users', JSON.stringify(localUsers));
+
+            if (supabaseClient) {
+                if (isEdit) {
+                    supabaseClient.from('pegawai').update(payload).eq('nip', nip).then(() => {}).catch(() => {});
+                } else {
+                    supabaseClient.from('pegawai').insert([payload]).then(() => {}).catch(() => {});
+                }
+            }
+
+            closeEmployeeModal();
+            loadAdminMasterDB();
+            loadAdminMonitoring();
+            showToast('Data pegawai berhasil disimpan!');
+        }
+
+        async function deleteEmployee(nip) {
+            if (!confirm(`Hapus pegawai dengan NIP ${nip} beserta seluruh sertifikatnya?`)) return;
+            let localUsers = getLocalUsers().filter(u => u.nip !== nip);
+            localStorage.setItem('uin_local_users', JSON.stringify(localUsers));
+
+            let localCerts = JSON.parse(localStorage.getItem('uin_local_certs') || '[]').filter(c => c.nip !== nip);
+            localStorage.setItem('uin_local_certs', JSON.stringify(localCerts));
+
+            if (supabaseClient) {
+                supabaseClient.from('sertifikat').delete().eq('nip', nip).then(() => {}).catch(() => {});
+                supabaseClient.from('pegawai').delete().eq('nip', nip).then(() => {}).catch(() => {});
+            }
+
+            loadAdminMasterDB();
+            loadAdminMonitoring();
+            showToast('Pegawai berhasil dihapus.');
+        }
+
+        // Reports
+        async function loadReportData() {
+            let users = getLocalUsers();
+            let certs = JSON.parse(localStorage.getItem('uin_local_certs') || '[]');
+            const tbody = document.getElementById('report-table-tbody');
+            tbody.innerHTML = users.map(u => {
+                const userCerts = certs.filter(c => c.nip === u.nip);
+                const totalPoin = userCerts.reduce((acc, c) => acc + (c.tingkat === 'Internasional' ? 100 : c.tingkat === 'Nasional' ? 75 : c.tingkat === 'Regional' ? 50 : 25), 0);
+                return `
+                    <tr>
+                        <td class="py-2 px-3 border">${u.nip}</td>
+                        <td class="py-2 px-3 border font-bold">${u.nama}</td>
+                        <td class="py-2 px-3 border">${u.unit_kerja || '-'}</td>
+                        <td class="py-2 px-3 border text-center font-bold">${userCerts.length}</td>
+                        <td class="py-2 px-3 border text-center font-extrabold text-amber-700">${totalPoin} Poin</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // Announcements Management (CRUD + Publish/Unpublish + File Attachment)
+        async function loadAdminAnnouncements() {
+            let announcements = JSON.parse(localStorage.getItem('uin_local_announcements') || '[]');
+            if (supabaseClient) {
+                try {
+                    const { data } = await supabaseClient.from('announcements').select('*').order('created_at', { ascending: false });
+                    if (data) announcements = data;
+                } catch(e) {}
+            }
+
+            const container = document.getElementById('admin-announcements-container');
+            if (announcements.length === 0) {
+                container.innerHTML = '<p class="text-xs text-slate-500 italic text-center py-6">Belum ada pengumuman.</p>';
+                return;
+            }
+            container.innerHTML = announcements.map(item => `
+                <div class="p-4 bg-white/70 border border-slate-200 rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div>
+                        <div class="flex items-center space-x-2 mb-1">
+                            <span class="px-2.5 py-0.5 rounded text-[10px] font-bold ${item.status === 'published' ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-200 text-slate-700'}">${item.status.toUpperCase()}</span>
+                            <span class="text-xs text-slate-400">${new Date(item.created_at || Date.now()).toLocaleDateString('id-ID')}</span>
+                        </div>
+                        <h4 class="font-bold text-slate-900 text-sm">${item.title}</h4>
+                        <p class="text-xs text-slate-600 mt-1">${item.content}</p>
+                        ${item.file_url ? `<div class="mt-2"><a href="${item.file_url}" target="_blank" download="${item.file_name || 'lampiran'}" class="inline-flex items-center px-3 py-1 bg-emerald-50 text-uin-primary text-xs font-bold rounded-lg border border-emerald-200 hover:bg-emerald-100 transition-all"><i class="fa-solid fa-paperclip mr-1.5"></i> ${item.file_name || 'Lihat Berkas Lampiran'}</a></div>` : ''}
+                    </div>
+                    <div class="flex items-center space-x-2 whitespace-nowrap">
+                        <button onclick="togglePublishAnnouncement('${item.id || item.title}', '${item.status}')" class="px-3 py-1.5 bg-amber-100 text-amber-800 rounded-xl font-bold text-xs">${item.status === 'published' ? 'Unpublish' : 'Publish'}</button>
+                        <button onclick='openEditAnnouncementModal(${JSON.stringify(item)})' class="px-3 py-1.5 bg-blue-100 text-blue-700 rounded-xl font-bold text-xs"><i class="fa-solid fa-pen"></i></button>
+                        <button onclick="deleteAnnouncement('${item.id || item.title}')" class="px-3 py-1.5 bg-red-100 text-red-700 rounded-xl font-bold text-xs"><i class="fa-solid fa-trash"></i></button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function openAnnouncementModal() {
+            document.getElementById('announcement-modal-title').innerText = 'Buat Pengumuman Baru';
+            document.getElementById('announcement-id').value = '';
+            document.getElementById('announcement-title').value = '';
+            document.getElementById('announcement-content').value = '';
+            document.getElementById('announcement-file').value = '';
+            document.getElementById('announcement-status').value = 'published';
+            document.getElementById('modal-announcement').classList.remove('hidden');
+        }
+
+        function openEditAnnouncementModal(item) {
+            document.getElementById('announcement-modal-title').innerText = 'Edit Pengumuman';
+            document.getElementById('announcement-id').value = item.id || item.title;
+            document.getElementById('announcement-title').value = item.title;
+            document.getElementById('announcement-content').value = item.content;
+            document.getElementById('announcement-status').value = item.status;
+            document.getElementById('modal-announcement').classList.remove('hidden');
+        }
+
+        function closeAnnouncementModal() { document.getElementById('modal-announcement').classList.add('hidden'); }
+
+        async function handleAnnouncementSubmit(e) {
+            e.preventDefault();
+            const id = document.getElementById('announcement-id').value;
+            const title = document.getElementById('announcement-title').value.trim();
+            const content = document.getElementById('announcement-content').value.trim();
+            const status = document.getElementById('announcement-status').value;
+            const fileInput = document.getElementById('announcement-file');
+            const file = fileInput.files[0];
+
+            const saveAnnouncementData = (fileUrl = null, fileName = null) => {
+                let announcements = JSON.parse(localStorage.getItem('uin_local_announcements') || '[]');
+                let payload = {
+                    id: id || 'ann_' + Date.now(),
+                    title: title,
+                    content: content,
+                    status: status,
+                    created_at: new Date().toISOString(),
+                    file_url: fileUrl,
+                    file_name: fileName
+                };
+
+                if (id) {
+                    announcements = announcements.map(a => {
+                        if (a.id === id || a.title === id) {
+                            payload.file_url = fileUrl || a.file_url;
+                            payload.file_name = fileName || a.file_name;
+                            return payload;
+                        }
+                        return a;
+                    });
+                } else {
+                    announcements.unshift(payload);
+                }
+                localStorage.setItem('uin_local_announcements', JSON.stringify(announcements));
+
+                if (supabaseClient) {
+                    const dbPayload = { title, content, status, file_url: payload.file_url, file_name: payload.file_name };
+                    if (id) {
+                        supabaseClient.from('announcements').update(dbPayload).eq('id', id).then(() => {}).catch(() => {});
+                    } else {
+                        supabaseClient.from('announcements').insert([dbPayload]).then(() => {}).catch(() => {});
+                    }
+                }
+
+                closeAnnouncementModal();
+                loadAdminAnnouncements();
+                loadPublicAnnouncements();
+                showToast('Pengumuman berhasil disimpan!');
+            };
+
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function() {
+                    saveAnnouncementData(reader.result, file.name);
+                };
+                reader.readAsDataURL(file);
+            } else {
+                saveAnnouncementData();
+            }
+        }
+
+        async function togglePublishAnnouncement(identifier, currentStatus) {
+            const nextStatus = currentStatus === 'published' ? 'draft' : 'published';
+            let announcements = JSON.parse(localStorage.getItem('uin_local_announcements') || '[]');
+            announcements = announcements.map(a => { if (a.id === identifier || a.title === identifier) a.status = nextStatus; return a; });
+            localStorage.setItem('uin_local_announcements', JSON.stringify(announcements));
+
+            if (supabaseClient) {
+                supabaseClient.from('announcements').update({ status: nextStatus }).eq('id', identifier).then(() => {}).catch(() => {});
+            }
+
+            loadAdminAnnouncements();
+            loadPublicAnnouncements();
+            showToast(`Status pengumuman diubah menjadi ${nextStatus}`);
+        }
+
+        async function deleteAnnouncement(identifier) {
+            if (!confirm('Hapus pengumuman ini?')) return;
+            let announcements = JSON.parse(localStorage.getItem('uin_local_announcements') || '[]');
+            announcements = announcements.filter(a => a.id !== identifier && a.title !== identifier);
+            localStorage.setItem('uin_local_announcements', JSON.stringify(announcements));
+
+            if (supabaseClient) {
+                supabaseClient.from('announcements').delete().eq('id', identifier).then(() => {}).catch(() => {});
+            }
+
+            loadAdminAnnouncements();
+            loadPublicAnnouncements();
+            showToast('Pengumuman berhasil disimpan.');
+        }
+
+        function filterAdminParticipants() {}
+    </script>
+</body>
+</html>

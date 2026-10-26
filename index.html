@@ -292,6 +292,9 @@
                     </div>
                 </div>
 
+                <!-- Notifikasi / Pesan Kendala dari Admin jika ada -->
+                <div id="user-notification-container"></div>
+
                 <!-- Kartu Berkas User -->
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div class="glass-card p-6 rounded-3xl space-y-4">
@@ -924,6 +927,7 @@
             document.getElementById('user-display-unit').innerText = currentUser.unit_kerja;
             document.getElementById('user-display-jabatan').innerText = currentUser.jabatan;
             loadUserCertificates();
+            loadUserNotification();
         }
 
         function showAdminDashboard() {
@@ -1013,6 +1017,36 @@
             renderCertList(arsipContainer, approved);
         }
 
+        function loadUserNotification() {
+            const notifs = JSON.parse(localStorage.getItem('uin_local_notifs') || '{}');
+            const container = document.getElementById('user-notification-container');
+            const userMsg = notifs[currentUser.nip];
+            if (userMsg) {
+                container.innerHTML = `
+                    <div class="glass-card p-5 rounded-3xl border border-amber-300 bg-amber-50/90 text-amber-950 flex items-start justify-between shadow-md">
+                        <div class="flex items-start space-x-3">
+                            <div class="w-10 h-10 rounded-xl bg-amber-500 text-white flex items-center justify-center shrink-0 font-bold text-base shadow"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                            <div>
+                                <h4 class="font-extrabold text-sm uppercase tracking-wide">Pesan & Kendala Berkas dari Administrator</h4>
+                                <p class="text-xs text-amber-900 mt-1">${userMsg}</p>
+                            </div>
+                        </div>
+                        <button onclick="clearUserNotification()" class="px-3 py-1.5 bg-amber-200 hover:bg-amber-300 text-amber-900 font-bold rounded-xl text-xs transition-all shadow-sm">Tandai Dibaca</button>
+                    </div>
+                `;
+            } else {
+                container.innerHTML = '';
+            }
+        }
+
+        function clearUserNotification() {
+            let notifs = JSON.parse(localStorage.getItem('uin_local_notifs') || '{}');
+            delete notifs[currentUser.nip];
+            localStorage.setItem('uin_local_notifs', JSON.stringify(notifs));
+            loadUserNotification();
+            showToast('Pesan kendala telah ditandai dibaca.');
+        }
+
         function renderCertList(container, items) {
             if (items.length === 0) {
                 container.innerHTML = '<p class="text-xs text-slate-400 text-center py-6">Belum ada berkas.</p>';
@@ -1051,6 +1085,7 @@
                     id: 'cert_' + Date.now(),
                     nip: currentUser.nip,
                     nama: currentUser.nama,
+                    unit_kerja: currentUser.unit_kerja,
                     kategori: document.getElementById('upload-kategori').value,
                     judul: document.getElementById('upload-judul').value,
                     tingkat: document.getElementById('upload-tingkat').value,
@@ -1085,7 +1120,7 @@
 
                 closeUploadModal();
                 loadUserCertificates();
-                showToast('Berhasil mengunggah sertifikat!');
+                showToast('Berhasil mengunggah sertifikat & File URL tercatat di Spreadsheet!');
             };
             if (file) reader.readAsDataURL(file);
         }
@@ -1223,10 +1258,16 @@
                 showToast('Mohon tuliskan pesan kendala terlebih dahulu!', 'error');
                 return;
             }
+            
+            // Simpan ke in-app notification user
+            let notifs = JSON.parse(localStorage.getItem('uin_local_notifs') || '{}');
+            notifs[selectedParticipantForDetail.nip] = msg;
+            localStorage.setItem('uin_local_notifs', JSON.stringify(notifs));
+
             const waNumber = selectedParticipantForDetail.whatsapp.replace(/[^0-9]/g, '');
             const url = `https://wa.me/${waNumber}?text=${encodeURIComponent(`Halo ${selectedParticipantForDetail.nama}, terkait pengumpulan berkas sertifikat Anda di Sistem UIN Ar-Raniry: ${msg}`)}`;
             window.open(url, '_blank');
-            showToast('Membuka WhatsApp untuk mengirim pesan kendala.');
+            showToast('Pesan kendala terkirim ke dashboard user & WhatsApp!');
         }
 
         // Master DB Pegawai

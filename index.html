@@ -96,7 +96,7 @@
                     <i class="fa-solid fa-graduation-cap text-lg md:text-xl"></i>
                 </div>
                 <div>
-                    <h1 class="text-sm md:text-lg font-extrabold text-uin-primary tracking-tight">UIN AR-RANIRY BANDA ACEH</h1>
+                    <h1 class="text-xs md:text-lg font-extrabold text-uin-primary tracking-tight">UIN AR-RANIRY BANDA ACEH</h1>
                     <p class="text-[10px] md:text-xs font-medium text-slate-600">Sistem Pengumpulan Sertifikat Keahlian & Kompetensi</p>
                 </div>
             </div>
@@ -578,7 +578,7 @@
         </div>
     </div>
 
-    <!-- Admin Login Modal -->
+    <!-- Admin Login Modal (Tanpa auto-fill / tersimpan) -->
     <div id="modal-admin-login" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 hidden">
         <div class="glass-modal w-full max-w-md p-6 md:p-8 rounded-3xl space-y-6 relative">
             <button onclick="closeAdminLoginModal()" class="absolute right-6 top-6 w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-600"><i class="fa-solid fa-xmark"></i></button>
@@ -589,14 +589,14 @@
                 <h3 class="text-xl font-extrabold text-uin-primary">Login Administrator</h3>
                 <p class="text-xs text-slate-500 mt-1">Masukkan kunci akses master sistem</p>
             </div>
-            <form onsubmit="handleAdminLogin(event)" class="space-y-4" autocomplete="off">
+            <form onsubmit="handleAdminLogin(event)" class="space-y-4" autocomplete="off" autofill="off">
                 <div>
                     <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Username Admin</label>
-                    <input type="text" id="admin-user" required value="" autocomplete="off" placeholder="Masukkan username" class="w-full px-4 py-3 rounded-xl bg-white/60 border border-slate-200 text-sm focus:ring-2 focus:ring-uin-primary">
+                    <input type="text" id="admin-user" required value="" autocomplete="new-password" autofill="off" placeholder="Masukkan username" class="w-full px-4 py-3 rounded-xl bg-white/60 border border-slate-200 text-sm focus:ring-2 focus:ring-uin-primary">
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Password Admin</label>
-                    <input type="password" id="admin-pass" required value="" autocomplete="new-password" placeholder="Masukkan password" class="w-full px-4 py-3 rounded-xl bg-white/60 border border-slate-200 text-sm focus:ring-2 focus:ring-uin-primary">
+                    <input type="password" id="admin-pass" required value="" autocomplete="new-password" autofill="off" placeholder="Masukkan password" class="w-full px-4 py-3 rounded-xl bg-white/60 border border-slate-200 text-sm focus:ring-2 focus:ring-uin-primary">
                 </div>
                 <button type="submit" class="w-full py-3.5 bg-amber-500 hover:bg-amber-600 text-amber-950 font-extrabold rounded-xl shadow-lg transition-all">
                     MASUK SEBAGAI ADMIN
@@ -857,6 +857,7 @@
         async function handleRegister(e) {
             e.preventDefault();
             const payload = {
+                type: 'register_pegawai',
                 nip: document.getElementById('reg-nip').value.trim(),
                 nama: document.getElementById('reg-nama').value.trim(),
                 whatsapp: document.getElementById('reg-wa').value.trim(),
@@ -878,7 +879,7 @@
                 method: 'POST',
                 mode: 'no-cors',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ type: 'register_pegawai', ...payload })
+                body: JSON.stringify(payload)
             }).catch(() => {});
 
             showToast('Pendaftaran berhasil! Silakan masuk.');
@@ -886,9 +887,8 @@
             document.getElementById('form-register').reset();
         }
 
-        // Admin Login Modal
+        // Admin Login Modal (Cleared inputs, no auto-fill)
         function openAdminLoginModal() {
-            // Clear inputs when opening modal so credentials don't carry over
             document.getElementById('admin-user').value = '';
             document.getElementById('admin-pass').value = '';
             document.getElementById('modal-admin-login').classList.remove('hidden');
@@ -1057,6 +1057,7 @@
             reader.onload = async function() {
                 const base64Data = reader.result;
                 const payload = {
+                    type: 'upload_sertifikat',
                     id: 'cert_' + Date.now(),
                     nip: currentUser.nip,
                     nama: currentUser.nama,
@@ -1078,7 +1079,7 @@
                     method: 'POST',
                     mode: 'no-cors',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ type: 'upload_sertifikat', ...payload })
+                    body: JSON.stringify(payload)
                 }).catch(() => {});
 
                 closeUploadModal();
@@ -1274,6 +1275,7 @@
             e.preventDefault();
             const nip = document.getElementById('emp-nip').value.trim();
             const payload = {
+                type: 'register_pegawai',
                 nip: nip,
                 nama: document.getElementById('emp-nama').value.trim(),
                 whatsapp: document.getElementById('emp-wa').value.trim(),
@@ -1411,6 +1413,7 @@
             const saveAnnouncementData = (fileUrl = null, fileName = null) => {
                 let announcements = JSON.parse(localStorage.getItem('uin_local_announcements') || '[]');
                 let payload = {
+                    type: 'save_announcement',
                     id: id || 'ann_' + Date.now(),
                     title: title,
                     content: content,
@@ -1438,7 +1441,7 @@
                     method: 'POST',
                     mode: 'no-cors',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ type: 'save_announcement', ...payload })
+                    body: JSON.stringify(payload)
                 }).catch(() => {});
 
                 closeAnnouncementModal();
@@ -1464,6 +1467,13 @@
             announcements = announcements.map(a => { if (a.id === identifier || a.title === identifier) a.status = nextStatus; return a; });
             localStorage.setItem('uin_local_announcements', JSON.stringify(announcements));
 
+            fetch(GAS_WEB_APP_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ type: 'save_announcement', id: identifier, status: nextStatus })
+            }).catch(() => {});
+
             loadAdminAnnouncements();
             loadPublicAnnouncements();
             showToast(`Status pengumuman diubah menjadi ${nextStatus}`);
@@ -1478,7 +1488,7 @@
             fetch(GAS_WEB_APP_URL, {
                 method: 'POST',
                 mode: 'no-cors',
-                headers: { 'Content-Type': 'application/json' },
+                    headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ type: 'delete_announcement', id: identifier })
             }).catch(() => {});
 

@@ -92,14 +92,16 @@
     <div id="app" class="relative z-10 flex flex-col min-h-screen">
 
         <!-- HEADER NAVIGATION -->
-        <header class="glass-card sticky top-0 z-50 px-6 py-4 flex items-center justify-between border-b border-white/40">
-            <div class="flex items-center space-x-3">
-                <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-uin-primary to-uin-secondary flex items-center justify-center text-white shadow-lg shadow-emerald-900/20">
-                    <i class="fa-solid fa-graduation-cap text-xl"></i>
-                </div>
-                <div>
-                    <h1 class="text-lg font-extrabold text-uin-primary tracking-tight">UIN AR-RANIRY BANDA ACEH</h1>
-                    <p class="text-xs font-medium text-slate-600">Sistem Pengumpulan Sertifikat Keahlian & Kompetensi</p>
+        <header class="glass-card sticky top-0 z-50 px-4 md:px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-3 border-b border-white/40">
+            <div class="flex items-center space-x-3 w-full sm:w-auto justify-between sm:justify-start">
+                <div class="flex items-center space-x-3">
+                    <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-uin-primary to-uin-secondary flex items-center justify-center text-white shadow-lg shadow-emerald-900/20 shrink-0">
+                        <i class="fa-solid fa-graduation-cap text-xl"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-sm md:text-lg font-extrabold text-uin-primary tracking-tight">UIN AR-RANIRY BANDA ACEH</h1>
+                        <p class="text-[11px] md:text-xs font-medium text-slate-600">Sistem Pengumpulan Sertifikat Keahlian & Kompetensi</p>
+                    </div>
                 </div>
             </div>
             <div id="nav-actions" class="flex items-center space-x-3">
@@ -127,20 +129,20 @@
             <!-- 1. PUBLIC LANDING / HOME VIEW -->
             <div id="view-home" class="space-y-8">
                 <!-- Banner Pengumuman / Jadwal -->
-                <div class="glass-card rounded-3xl p-8 md:p-12 text-center relative overflow-hidden bg-gradient-to-br from-emerald-900 via-emerald-800 to-teal-900 text-white shadow-2xl">
+                <div class="glass-card rounded-3xl p-6 md:p-12 text-center relative overflow-hidden bg-gradient-to-br from-emerald-900 via-emerald-800 to-teal-900 text-white shadow-2xl">
                     <div class="absolute -right-20 -bottom-20 w-80 h-80 bg-white/10 rounded-full blur-2xl pointer-events-none"></div>
                     <span class="inline-block px-4 py-1.5 rounded-full bg-amber-400 text-amber-950 font-bold text-xs uppercase tracking-widest mb-4 shadow-md">Pendaftaran Dibuka</span>
-                    <h2 class="text-3xl md:text-5xl font-black tracking-tight mb-4">JADWAL PENGIRIMAN / PENGUMPULAN SERTIFIKAT</h2>
-                    <p class="text-emerald-100 max-w-2xl mx-auto text-sm md:text-base mb-8">Wajib bagi seluruh Dosen & Tenaga Kependidikan (Tendik) UIN Ar-Raniry Banda Aceh dalam pemenuhan portofolio tahun 2026.</p>
+                    <h2 class="text-2xl md:text-5xl font-black tracking-tight mb-4">JADWAL PENGIRIMAN / PENGUMPULAN SERTIFIKAT</h2>
+                    <p class="text-emerald-100 max-w-2xl mx-auto text-xs md:text-base mb-8">Wajib bagi seluruh Dosen & Tenaga Kependidikan (Tendik) UIN Ar-Raniry Banda Aceh dalam pemenuhan portofolio tahun 2026.</p>
                     
                     <!-- Countdown Timer -->
-                    <div class="inline-flex items-center space-x-2 bg-white/10 backdrop-blur-md px-6 py-3 rounded-2xl border border-white/20 text-sm font-semibold mb-8 shadow-inner">
+                    <div class="inline-flex items-center space-x-2 bg-white/10 backdrop-blur-md px-6 py-3 rounded-2xl border border-white/20 text-xs md:text-sm font-semibold mb-8 shadow-inner">
                         <i class="fa-regular fa-clock text-amber-400 mr-2"></i>
                         <span>Tenggat Waktu: <strong id="countdown-text" class="text-amber-300">Memuat...</strong></span>
                     </div>
 
                     <div>
-                        <button onclick="scrollToAuth()" class="px-8 py-4 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-amber-950 font-extrabold rounded-2xl shadow-xl shadow-amber-900/30 transition-all transform hover:-translate-y-0.5">
+                        <button onclick="scrollToAuth()" class="px-8 py-4 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-amber-950 font-extrabold rounded-2xl shadow-xl shadow-amber-900/30 transition-all transform hover:-translate-y-0.5 text-xs md:text-sm">
                             <i class="fa-solid fa-rocket mr-2"></i> MULAI UNGGAH SERTIFIKAT
                         </button>
                     </div>
@@ -149,7 +151,7 @@
                 <!-- Statistik Ringkas -->
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div class="glass-card p-6 rounded-3xl flex items-center space-x-4">
-                        <div class="w-14 h-14 rounded-2xl bg-emerald-100 text-uin-primary flex items-center justify-center text-2xl font-bold shadow-inner">
+                        <div class="w-14 h-14 rounded-2xl bg-emerald-100 text-uin-primary flex items-center justify-center text-2xl font-bold shadow-inner shrink-0">
                             <i class="fa-solid fa-users"></i>
                         </div>
                         <div>
@@ -158,7 +160,7 @@
                         </div>
                     </div>
                     <div class="glass-card p-6 rounded-3xl flex items-center space-x-4">
-                        <div class="w-14 h-14 rounded-2xl bg-teal-100 text-teal-800 flex items-center justify-center text-2xl font-bold shadow-inner">
+                        <div class="w-14 h-14 rounded-2xl bg-teal-100 text-teal-800 flex items-center justify-center text-2xl font-bold shadow-inner shrink-0">
                             <i class="fa-solid fa-building-columns"></i>
                         </div>
                         <div>
@@ -167,7 +169,7 @@
                         </div>
                     </div>
                     <div class="glass-card p-6 rounded-3xl flex items-center space-x-4">
-                        <div class="w-14 h-14 rounded-2xl bg-amber-100 text-amber-800 flex items-center justify-center text-2xl font-bold shadow-inner">
+                        <div class="w-14 h-14 rounded-2xl bg-amber-100 text-amber-800 flex items-center justify-center text-2xl font-bold shadow-inner shrink-0">
                             <i class="fa-solid fa-file-shield"></i>
                         </div>
                         <div>
@@ -178,15 +180,15 @@
                 </div>
 
                 <!-- Pengumuman Publik -->
-                <div class="glass-card p-8 rounded-3xl space-y-6">
-                    <h3 class="text-xl font-bold text-uin-primary flex items-center"><i class="fa-solid fa-bullhorn mr-3 text-amber-500"></i> Pengumuman Resmi & Informasi</h3>
+                <div class="glass-card p-6 md:p-8 rounded-3xl space-y-6">
+                    <h3 class="text-lg md:text-xl font-bold text-uin-primary flex items-center"><i class="fa-solid fa-bullhorn mr-3 text-amber-500"></i> Pengumuman Resmi & Informasi</h3>
                     <div id="public-announcements-list" class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <!-- Loaded dynamically -->
                     </div>
                 </div>
 
                 <!-- Auth Section (Login / Daftar) -->
-                <div id="auth-section" class="glass-card p-8 md:p-10 rounded-3xl max-w-xl mx-auto shadow-xl">
+                <div id="auth-section" class="glass-card p-6 md:p-10 rounded-3xl max-w-xl mx-auto shadow-xl">
                     <div class="flex border-b border-slate-200 mb-6">
                         <button onclick="switchAuthTab('login')" id="tab-login-btn" class="flex-1 pb-3 text-sm font-bold text-uin-primary border-b-2 border-uin-primary transition-all">Masuk Akun</button>
                         <button onclick="switchAuthTab('register')" id="tab-register-btn" class="flex-1 pb-3 text-sm font-bold text-slate-400 hover:text-slate-600 transition-all">Daftar Akun Baru</button>
@@ -202,7 +204,7 @@
                             <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Kata Sandi</label>
                             <input type="password" id="login-password" required placeholder="••••••••" class="w-full px-4 py-3 rounded-xl bg-white/60 border border-slate-200 focus:outline-none focus:ring-2 focus:ring-uin-primary text-sm">
                         </div>
-                        <button type="submit" class="w-full py-3.5 bg-uin-primary hover:bg-uin-secondary text-white font-bold rounded-xl shadow-lg transition-all">
+                        <button type="submit" class="w-full py-3.5 bg-uin-primary hover:bg-uin-secondary text-white font-bold rounded-xl shadow-lg transition-all text-sm">
                             MASUK KE DASHBOARD
                         </button>
                     </form>
@@ -265,7 +267,7 @@
                                 </select>
                             </div>
                         </div>
-                        <button type="submit" class="w-full py-3.5 bg-gradient-to-r from-uin-primary to-uin-secondary hover:opacity-95 text-white font-bold rounded-xl shadow-lg transition-all">
+                        <button type="submit" class="w-full py-3.5 bg-gradient-to-r from-uin-primary to-uin-secondary hover:opacity-95 text-white font-bold rounded-xl shadow-lg transition-all text-sm">
                             DAFTAR SEKARANG
                         </button>
                     </form>
@@ -277,16 +279,16 @@
                 <div class="glass-card p-6 md:p-8 rounded-3xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                     <div>
                         <div class="flex items-center space-x-3 mb-1">
-                            <h2 class="text-2xl font-extrabold text-uin-primary" id="user-welcome-name">Selamat Datang, Pegawai</h2>
+                            <h2 class="text-xl md:text-2xl font-extrabold text-uin-primary" id="user-welcome-name">Selamat Datang, Pegawai</h2>
                             <span id="user-status-badge" class="px-3 py-1 bg-emerald-100 text-emerald-800 rounded-full text-xs font-bold">Terverifikasi</span>
                         </div>
-                        <p class="text-sm text-slate-600"><span id="user-display-nip">NIP: -</span> • <span id="user-display-unit">-</span> (<span id="user-display-jabatan">-</span>)</p>
+                        <p class="text-xs md:text-sm text-slate-600"><span id="user-display-nip">NIP: -</span> • <span id="user-display-unit">-</span> (<span id="user-display-jabatan">-</span>)</p>
                     </div>
-                    <div class="flex items-center space-x-3">
-                        <button onclick="openUploadModal()" class="px-5 py-3 bg-uin-primary hover:bg-uin-secondary text-white font-bold rounded-2xl shadow-lg transition-all flex items-center">
+                    <div class="flex items-center space-x-3 w-full md:w-auto justify-end">
+                        <button onclick="openUploadModal()" class="px-5 py-3 bg-uin-primary hover:bg-uin-secondary text-white font-bold rounded-2xl shadow-lg transition-all flex items-center text-xs md:text-sm">
                             <i class="fa-solid fa-cloud-arrow-up mr-2"></i> Upload Sertifikat Baru
                         </button>
-                        <button onclick="logout()" class="px-4 py-3 bg-red-100 hover:bg-red-200 text-red-700 font-bold rounded-2xl transition-all">
+                        <button onclick="logout()" class="px-4 py-3 bg-red-100 hover:bg-red-200 text-red-700 font-bold rounded-2xl transition-all text-xs md:text-sm">
                             <i class="fa-solid fa-right-from-bracket"></i>
                         </button>
                     </div>
@@ -301,7 +303,7 @@
                         <div class="flex justify-between items-center">
                             <div class="flex items-center space-x-3">
                                 <div class="w-10 h-10 rounded-xl bg-emerald-100 text-uin-primary flex items-center justify-center font-bold"><i class="fa-solid fa-award"></i></div>
-                                <h4 class="font-bold text-slate-800">Sertifikat Keahlian</h4>
+                                <h4 class="font-bold text-slate-800 text-sm">Sertifikat Keahlian</h4>
                             </div>
                             <span id="count-keahlian" class="px-3 py-1 bg-emerald-50 text-uin-primary text-xs font-extrabold rounded-full">0 File</span>
                         </div>
@@ -314,7 +316,7 @@
                         <div class="flex justify-between items-center">
                             <div class="flex items-center space-x-3">
                                 <div class="w-10 h-10 rounded-xl bg-teal-100 text-teal-800 flex items-center justify-center font-bold"><i class="fa-solid fa-book-open"></i></div>
-                                <h4 class="font-bold text-slate-800">Sertifikat Kompetensi</h4>
+                                <h4 class="font-bold text-slate-800 text-sm">Sertifikat Kompetensi</h4>
                             </div>
                             <span id="count-kompetensi" class="px-3 py-1 bg-teal-50 text-teal-800 text-xs font-extrabold rounded-full">0 File</span>
                         </div>
@@ -327,7 +329,7 @@
                         <div class="flex justify-between items-center">
                             <div class="flex items-center space-x-3">
                                 <div class="w-10 h-10 rounded-xl bg-amber-100 text-amber-800 flex items-center justify-center font-bold"><i class="fa-solid fa-box-archive"></i></div>
-                                <h4 class="font-bold text-slate-800">Arsip Terverifikasi</h4>
+                                <h4 class="font-bold text-slate-800 text-sm">Arsip Terverifikasi</h4>
                             </div>
                             <span id="count-arsip" class="px-3 py-1 bg-amber-50 text-amber-800 text-xs font-extrabold rounded-full">0 Arsip</span>
                         </div>
@@ -343,20 +345,20 @@
                 <div class="glass-card p-6 md:p-8 rounded-3xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                     <div>
                         <div class="flex items-center space-x-3 mb-1">
-                            <h2 class="text-2xl font-extrabold text-uin-primary">Dashboard Administrator</h2>
+                            <h2 class="text-xl md:text-2xl font-extrabold text-uin-primary">Dashboard Administrator</h2>
                             <span class="px-3 py-1 bg-amber-100 text-amber-800 rounded-full text-xs font-bold">Master Control</span>
                         </div>
-                        <p class="text-sm text-slate-600">Pusat kontrol validasi sertifikat, kelola pegawai, jadwal, laporan, dan pengumuman.</p>
+                        <p class="text-xs md:text-sm text-slate-600">Pusat kontrol validasi sertifikat, kelola pegawai, jadwal, laporan, dan pengumuman.</p>
                     </div>
-                    <div class="flex flex-wrap items-center gap-2">
+                    <div class="flex flex-wrap items-center gap-2 w-full md:w-auto justify-end">
                         <a href="https://docs.google.com/spreadsheets/d/1JUs07WljgRkFgKj5Bq3lPq54QF4-c1R8BUo8Rp7ySpQ/edit" target="_blank" class="px-4 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white font-bold rounded-xl transition-all text-xs flex items-center shadow">
-                            <i class="fa-solid fa-file-excel mr-1.5 text-emerald-300 text-sm"></i> Buka Spreadsheet
+                            <i class="fa-solid fa-file-excel mr-1.5 text-emerald-300 text-sm"></i> Spreadsheet
                         </a>
                         <a href="https://drive.google.com/drive/folders/1DVlR9lMRdIDDuEbqUVyVlAxypxNoUOLo" target="_blank" class="px-4 py-2.5 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-xl transition-all text-xs flex items-center shadow">
-                            <i class="fa-brands fa-google-drive mr-1.5 text-amber-200 text-sm"></i> Buka Google Drive
+                            <i class="fa-brands fa-google-drive mr-1.5 text-amber-200 text-sm"></i> Google Drive
                         </a>
                         <button onclick="logout()" class="px-4 py-2.5 bg-red-100 hover:bg-red-200 text-red-700 font-bold rounded-xl transition-all text-xs flex items-center">
-                            <i class="fa-solid fa-right-from-bracket mr-1.5"></i> Keluar Admin
+                            <i class="fa-solid fa-right-from-bracket mr-1.5"></i> Keluar
                         </button>
                     </div>
                 </div>
@@ -381,7 +383,7 @@
                             </div>
                         </div>
                         <div class="overflow-x-auto">
-                            <table class="w-full text-left text-xs">
+                            <table class="w-full text-left text-xs whitespace-nowrap md:whitespace-normal">
                                 <thead>
                                     <tr class="border-b border-slate-200 text-slate-500 font-bold uppercase">
                                         <th class="py-3 px-4">No</th>
@@ -412,7 +414,7 @@
                             </button>
                         </div>
                         <div class="overflow-x-auto">
-                            <table class="w-full text-left text-xs">
+                            <table class="w-full text-left text-xs whitespace-nowrap md:whitespace-normal">
                                 <thead>
                                     <tr class="border-b border-slate-200 text-slate-500 font-bold uppercase">
                                         <th class="py-3 px-4">NIP</th>
@@ -468,7 +470,7 @@
                             </div>
                         </div>
                         <div class="overflow-x-auto">
-                            <table class="w-full text-left text-xs border border-slate-200">
+                            <table class="w-full text-left text-xs border border-slate-200 whitespace-nowrap md:whitespace-normal">
                                 <thead>
                                     <tr class="bg-slate-100 text-slate-600 font-bold uppercase">
                                         <th class="py-2.5 px-3 border">NIP</th>
@@ -509,7 +511,7 @@
             <div class="container mx-auto px-4 max-w-7xl grid grid-cols-1 md:grid-cols-3 gap-8">
                 <div class="space-y-3">
                     <div class="flex items-center space-x-3">
-                        <div class="w-10 h-10 rounded-xl bg-uin-primary flex items-center justify-center text-white">
+                        <div class="w-10 h-10 rounded-xl bg-uin-primary flex items-center justify-center text-white shrink-0">
                             <i class="fa-solid fa-graduation-cap"></i>
                         </div>
                         <span class="font-extrabold text-white text-sm">UIN Ar-Raniry Banda Aceh</span>
@@ -591,16 +593,16 @@
                 <h3 class="text-xl font-extrabold text-uin-primary">Login Administrator</h3>
                 <p class="text-xs text-slate-500 mt-1">Masukkan kunci akses master sistem</p>
             </div>
-            <form onsubmit="handleAdminLogin(event)" class="space-y-4">
+            <form onsubmit="handleAdminLogin(event)" class="space-y-4" autocomplete="off">
                 <div>
                     <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Username Admin</label>
-                    <input type="text" id="admin-user" required value="admin" class="w-full px-4 py-3 rounded-xl bg-white/60 border border-slate-200 text-sm focus:ring-2 focus:ring-uin-primary">
+                    <input type="text" id="admin-user" required autocomplete="off" placeholder="Username" class="w-full px-4 py-3 rounded-xl bg-white/60 border border-slate-200 text-sm focus:ring-2 focus:ring-uin-primary">
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Password Admin</label>
-                    <input type="password" id="admin-pass" required value="kepeg2026" class="w-full px-4 py-3 rounded-xl bg-white/60 border border-slate-200 text-sm focus:ring-2 focus:ring-uin-primary">
+                    <input type="password" id="admin-pass" required autocomplete="new-password" placeholder="••••••••" class="w-full px-4 py-3 rounded-xl bg-white/60 border border-slate-200 text-sm focus:ring-2 focus:ring-uin-primary">
                 </div>
-                <button type="submit" class="w-full py-3.5 bg-amber-500 hover:bg-amber-600 text-amber-950 font-extrabold rounded-xl shadow-lg transition-all">
+                <button type="submit" class="w-full py-3.5 bg-amber-500 hover:bg-amber-600 text-amber-950 font-extrabold rounded-xl shadow-lg transition-all text-sm">
                     MASUK SEBAGAI ADMIN
                 </button>
             </form>
@@ -894,8 +896,13 @@
         }
 
         // Admin Login Modal
-        function openAdminLoginModal() { document.getElementById('modal-admin-login').classList.remove('hidden'); }
+        function openAdminLoginModal() { 
+            document.getElementById('admin-user').value = '';
+            document.getElementById('admin-pass').value = '';
+            document.getElementById('modal-admin-login').classList.remove('hidden'); 
+        }
         function closeAdminLoginModal() { document.getElementById('modal-admin-login').classList.add('hidden'); }
+        
         function handleAdminLogin(e) {
             e.preventDefault();
             const u = document.getElementById('admin-user').value;
@@ -907,7 +914,7 @@
                 showAdminDashboard();
                 showToast('Login Admin Berhasil!');
             } else {
-                showToast('Kunci akses admin salah!', 'error');
+                showToast('Username atau Password Admin salah!', 'error');
             }
         }
 
@@ -1259,7 +1266,6 @@
                 return;
             }
             
-            // Simpan ke in-app notification user
             let notifs = JSON.parse(localStorage.getItem('uin_local_notifs') || '{}');
             notifs[selectedParticipantForDetail.nip] = msg;
             localStorage.setItem('uin_local_notifs', JSON.stringify(notifs));

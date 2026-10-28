@@ -213,9 +213,11 @@
                     <p class="text-emerald-100 max-w-2xl mx-auto text-xs md:text-base mb-8">UIN AR-RANIRY BANDA ACEH, KAMPUS ENERGI KEBANGSAAN, SINERGI MEMBANGUN NEGERI</p>
                     
                     <!-- Countdown Timer -->
-                    <div class="inline-flex items-center space-x-2 bg-white/10 backdrop-blur-md px-6 py-3 rounded-2xl border border-white/20 text-xs md:text-sm font-semibold mb-8 shadow-inner">
-                        <i class="fa-regular fa-clock text-amber-400 mr-2"></i>
-                        <span>Tenggat Waktu: <strong id="countdown-text" class="text-amber-300">Memuat...</strong></span>
+                    <div class="inline-flex flex-col items-center gap-2 bg-white/10 backdrop-blur-md px-6 py-3 rounded-2xl border border-white/20 text-xs md:text-sm font-semibold mb-8 shadow-inner">
+                        <span id="schedule-range-text" class="text-emerald-100">Jadwal: Memuat...</span>
+                        <span class="inline-flex items-center gap-2"><i class="fa-regular fa-clock text-amber-400"></i>
+                            <strong id="countdown-text" class="text-amber-300">Memuat countdown...</strong>
+                        </span>
                     </div>
 
                     <div>
@@ -546,14 +548,18 @@
                 <div id="adm-content-schedule" class="space-y-4 hidden">
                     <div class="glass-card p-6 rounded-3xl space-y-4 max-w-xl">
                         <h3 class="font-bold text-slate-800 text-lg">Pengaturan Jadwal Buka & Tutup Pengiriman</h3>
-                        <p class="text-xs text-slate-500">Tentukan batas waktu pengunggahan sertifikat bagi seluruh pegawai.</p>
+                        <p class="text-xs text-slate-500">Atur tanggal mulai dan batas akhir pengumpulan untuk seluruh pegawai. Tanggal mulai boleh dikosongkan jika pengumpulan sudah dimulai.</p>
                         <div class="space-y-3">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Tanggal & Waktu Mulai (Opsional)</label>
+                                <input type="datetime-local" id="admin-start-date-input" class="w-full px-4 py-2.5 bg-white/70 border border-slate-200 rounded-xl text-xs">
+                            </div>
                             <div>
                                 <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Batas Akhir Waktu Pengumpulan</label>
                                 <input type="datetime-local" id="admin-deadline-input" value="2026-10-30T23:59" class="w-full px-4 py-2.5 bg-white/70 border border-slate-200 rounded-xl text-xs">
                             </div>
                             <button onclick="saveScheduleDeadline()" class="px-5 py-2.5 bg-uin-primary text-white font-bold rounded-xl text-xs shadow hover:bg-uin-secondary transition-all">
-                                Simpan Jadwal Baru
+                                Simpan Jadwal Mulai & Akhir
                             </button>
                         </div>
                     </div>
@@ -963,6 +969,7 @@
                 let announcementsChanged = false;
                 let unitsChanged = false;
                 let runningTextChanged = false;
+                let scheduleChanged = false;
                 if (Array.isArray(result.pegawai)) {
                     const users = JSON.stringify(result.pegawai.map(normalizeSheetUser));
                     usersChanged = localStorage.getItem('uin_local_users') !== users;
@@ -989,6 +996,12 @@
                     runningTextChanged = localStorage.getItem('uin_local_running_text') !== runningTexts;
                     if (runningTextChanged) localStorage.setItem('uin_local_running_text', runningTexts);
                 }
+                if (result.schedule && typeof result.schedule === 'object') {
+                    const schedule = normalizeSchedule(result.schedule);
+                    const scheduleJson = JSON.stringify(schedule);
+                    scheduleChanged = localStorage.getItem('uin_schedule') !== scheduleJson;
+                    if (scheduleChanged) localStorage.setItem('uin_schedule', scheduleJson);
+                }
                 const shouldRenderInitialData = !cloudDataInitialized;
                 if (currentUser && currentUser.role !== 'admin' &&
                     !result.pegawai.some(user => String(user.nip || user.NIP) === String(currentUser.nip))) {
@@ -1001,6 +1014,10 @@
                 if (unitsChanged || shouldRenderInitialData) populateUnitDropdowns();
                 if (announcementsChanged || shouldRenderInitialData) loadPublicAnnouncements();
                 if (runningTextChanged || shouldRenderInitialData) renderPublicRunningText();
+                if (scheduleChanged || shouldRenderInitialData) {
+                    renderSchedule();
+                    if (currentUser && currentUser.role === 'admin') populateScheduleSettings();
+                }
                 if (usersChanged || certificatesChanged || unitsChanged || shouldRenderInitialData) fetchSystemStats();
                 if (currentUser && currentUser.role === 'admin') {
                     if (usersChanged || certificatesChanged || shouldRenderInitialData) loadAdminMonitoring();
@@ -1180,33 +1197,127 @@
             if (empUnit) empUnit.innerHTML = optionsHTML;
         }
 
-        // Countdown Timer
-        function initCountdown() {
-            let deadlineStr = localStorage.getItem('uin_custom_deadline') || '2026-10-30T23:59:00';
-            const deadline = new Date(deadlineStr).getTime();
-            setInterval(() => {
-                const now = new Date().getTime();
-                const diff = deadline - now;
-                if (diff > 0) {
-                    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-                    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-                    const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-                    document.getElementById('countdown-text').innerText = `${days} hari ${hours} jam ${minutes} menit ${seconds} detik lagi`;
-                } else {
-                    document.getElementById('countdown-text').innerText = 'Pendaftaran Ditutup';
-                }
-            }, 1000);
+        const DEFAULT_SCHEDULE = {
+            start_at: null,
+            end_at: new Date('2026-10-30T23:59:00+07:00').getTime()
+        };
+        let countdownInterval = null;
+
+        function normalizeSchedule(schedule) {
+            const toTimestamp = value => {
+                if (value === '' || value === null || value === undefined) return null;
+                const timestamp = typeof value === 'number' ? value : new Date(value).getTime();
+                return Number.isFinite(timestamp) ? timestamp : null;
+            };
+            return {
+                start_at: toTimestamp(schedule.start_at !== undefined ? schedule.start_at : schedule['Start At']),
+                end_at: toTimestamp(schedule.end_at !== undefined ? schedule.end_at : schedule['End At'])
+            };
         }
 
-        function saveScheduleDeadline() {
-            const val = document.getElementById('admin-deadline-input').value;
-            if (!val) {
-                showToast('Pilih tanggal dan waktu deadline terlebih dahulu!', 'error');
+        function getSchedule() {
+            const saved = localStorage.getItem('uin_schedule');
+            if (!saved) {
+                const legacyDeadline = localStorage.getItem('uin_custom_deadline');
+                return {
+                    ...DEFAULT_SCHEDULE,
+                    end_at: legacyDeadline ? new Date(legacyDeadline).getTime() : DEFAULT_SCHEDULE.end_at
+                };
+            }
+            try {
+                return { ...DEFAULT_SCHEDULE, ...normalizeSchedule(JSON.parse(saved)) };
+            } catch (error) {
+                console.error('Jadwal lokal tidak valid:', error);
+                return { ...DEFAULT_SCHEDULE };
+            }
+        }
+
+        function formatScheduleDate(timestamp) {
+            return new Date(timestamp).toLocaleString('id-ID', {
+                day: 'numeric', month: 'long', year: 'numeric',
+                hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Jakarta'
+            }) + ' WIB';
+        }
+
+        function toDateTimeLocalValue(timestamp) {
+            if (!timestamp) return '';
+            const date = new Date(timestamp);
+            const localDate = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
+            return localDate.toISOString().slice(0, 16);
+        }
+
+        function renderSchedule() {
+            const schedule = getSchedule();
+            const range = document.getElementById('schedule-range-text');
+            if (range) {
+                range.textContent = `Mulai: ${schedule.start_at ? formatScheduleDate(schedule.start_at) : 'Segera'} • Berakhir: ${formatScheduleDate(schedule.end_at)}`;
+            }
+            if (countdownInterval) clearInterval(countdownInterval);
+            updateCountdown();
+            countdownInterval = window.setInterval(updateCountdown, 1000);
+        }
+
+        function updateCountdown() {
+            const schedule = getSchedule();
+            const countdown = document.getElementById('countdown-text');
+            if (!countdown || !schedule.end_at) return;
+            const now = Date.now();
+            if (schedule.start_at && now < schedule.start_at) {
+                countdown.textContent = `Mulai dalam ${formatRemainingTime(schedule.start_at - now)}`;
+            } else if (now < schedule.end_at) {
+                countdown.textContent = `Tersisa ${formatRemainingTime(schedule.end_at - now)}`;
+            } else {
+                countdown.textContent = 'Pengumpulan Ditutup';
+            }
+        }
+
+        function formatRemainingTime(milliseconds) {
+            const totalHours = Math.floor(milliseconds / (1000 * 60 * 60));
+            const days = Math.floor(totalHours / 24);
+            const hours = totalHours % 24;
+            return `${days} hari ${hours} jam`;
+        }
+
+        function initCountdown() {
+            renderSchedule();
+        }
+
+        function populateScheduleSettings() {
+            const schedule = getSchedule();
+            document.getElementById('admin-start-date-input').value = toDateTimeLocalValue(schedule.start_at);
+            document.getElementById('admin-deadline-input').value = toDateTimeLocalValue(schedule.end_at);
+        }
+
+        async function saveScheduleDeadline() {
+            const startValue = document.getElementById('admin-start-date-input').value;
+            const endValue = document.getElementById('admin-deadline-input').value;
+            const startAt = startValue ? new Date(startValue).getTime() : null;
+            const endAt = endValue ? new Date(endValue).getTime() : null;
+            if (!endAt || !Number.isFinite(endAt)) {
+                showToast('Pilih tanggal dan waktu akhir pengumpulan yang valid.', 'error');
                 return;
             }
-            localStorage.setItem('uin_custom_deadline', val + ':00');
-            showToast('Jadwal buka-tutup pengiriman berhasil diperbarui!');
+            if (startValue && (!Number.isFinite(startAt) || startAt >= endAt)) {
+                showToast('Tanggal mulai harus lebih awal daripada tanggal akhir.', 'error');
+                return;
+            }
+            const previousSchedule = getSchedule();
+            const schedule = { start_at: startAt, end_at: endAt };
+            localStorage.setItem('uin_schedule', JSON.stringify(schedule));
+            renderSchedule();
+            const sent = await sendCloudMutation({ type: 'save_schedule', start_at: startAt, end_at: endAt });
+            if (sent) {
+                await new Promise(resolve => window.setTimeout(resolve, 400));
+                const refreshed = await loadCloudData(true);
+                const saved = getSchedule();
+                if (refreshed && saved.start_at === schedule.start_at && saved.end_at === schedule.end_at) {
+                    showToast('Jadwal mulai dan akhir berhasil diperbarui untuk semua pengguna.');
+                    return;
+                }
+            }
+            localStorage.setItem('uin_schedule', JSON.stringify(previousSchedule));
+            renderSchedule();
+            showToast('Jadwal gagal disinkronkan. Pastikan Apps Script sudah diperbarui dan di-deploy ulang.', 'error');
         }
 
         // Auth Tabs
@@ -1350,6 +1461,7 @@
             loadAdminUnitsTable();
             loadAdminAnnouncements();
             loadAdminRunningTexts();
+            populateScheduleSettings();
             loadReportData();
         }
 

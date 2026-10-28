@@ -48,7 +48,20 @@ function doGet(e) {
     runningTextSheet.appendRow(['ID', 'Message', 'Status', 'Updated At']);
   }
 
-  // 5. UnitKerja Sheet
+  // 5. Schedule Sheet
+  var scheduleSheet = ss.getSheetByName('Schedule');
+  if (!scheduleSheet) {
+    scheduleSheet = ss.insertSheet('Schedule');
+    scheduleSheet.appendRow(['ID', 'Start At', 'End At', 'Updated At']);
+    scheduleSheet.appendRow(['schedule', '', 1793379540000, new Date()]);
+  } else if (scheduleSheet.getLastRow() === 0) {
+    scheduleSheet.appendRow(['ID', 'Start At', 'End At', 'Updated At']);
+    scheduleSheet.appendRow(['schedule', '', 1793379540000, new Date()]);
+  } else if (scheduleSheet.getLastRow() === 1) {
+    scheduleSheet.appendRow(['schedule', '', 1793379540000, new Date()]);
+  }
+
+  // 6. UnitKerja Sheet
   var unitSheet = ss.getSheetByName('UnitKerja') || ss.insertSheet('UnitKerja');
   if (unitSheet.getLastRow() === 0) {
     unitSheet.appendRow(['ID', 'Nama Unit']);
@@ -70,6 +83,12 @@ function doGet(e) {
     var sertifikat = sheetToJSON(sertifikatSheet);
     var announcements = sheetToJSON(announcementSheet);
     var running_text = sheetToJSON(runningTextSheet);
+    var scheduleRows = sheetToJSON(scheduleSheet);
+    var schedule = scheduleRows.length ? {
+      start_at: scheduleRows[0]['Start At'] || null,
+      end_at: scheduleRows[0]['End At'],
+      updated_at: scheduleRows[0]['Updated At']
+    } : null;
     var unit_kerja = sheetToJSON(unitSheet).map(function(unit) {
       return {
         id: unit.ID,
@@ -83,6 +102,7 @@ function doGet(e) {
       sertifikat: sertifikat,
       announcements: announcements,
       running_text: running_text,
+      schedule: schedule,
       unit_kerja: unit_kerja
     })).setMimeType(ContentService.MimeType.JSON);
   }
@@ -273,6 +293,23 @@ function doPost(e) {
             runningTextSheet.deleteRow(runningTextIndex + 1);
           }
         }
+      }
+    }
+    else if (data.type === 'save_schedule') {
+      var scheduleStartAt = data.start_at === null || data.start_at === '' ? '' : Number(data.start_at);
+      var scheduleEndAt = Number(data.end_at);
+      if (!isFinite(scheduleEndAt) || scheduleEndAt <= 0 ||
+          (scheduleStartAt !== '' && (!isFinite(scheduleStartAt) || scheduleStartAt >= scheduleEndAt))) {
+        throw new Error('Rentang tanggal jadwal tidak valid.');
+      }
+      var scheduleSheet = ss.getSheetByName('Schedule') || ss.insertSheet('Schedule');
+      if (scheduleSheet.getLastRow() === 0) {
+        scheduleSheet.appendRow(['ID', 'Start At', 'End At', 'Updated At']);
+      }
+      if (scheduleSheet.getLastRow() < 2) {
+        scheduleSheet.appendRow(['schedule', scheduleStartAt, scheduleEndAt, new Date()]);
+      } else {
+        scheduleSheet.getRange(2, 1, 1, 4).setValues([['schedule', scheduleStartAt, scheduleEndAt, new Date()]]);
       }
     }
     else if (data.type === 'save_unit_kerja') {

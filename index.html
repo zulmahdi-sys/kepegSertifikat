@@ -370,7 +370,7 @@
                             <h2 class="text-xl md:text-2xl font-extrabold text-uin-primary">Dashboard Administrator</h2>
                             <span class="px-3 py-1 bg-amber-100 text-amber-800 rounded-full text-xs font-bold">Master Control</span>
                         </div>
-                        <p class="text-xs md:text-sm text-slate-600">Pusat kontrol validasi sertifikat, kelola pegawai, unit kerja, jadwal, laporan, dan pengumuman.</p>
+                        <p class="text-xs md:text-sm text-slate-600">Pusat kontrol validasi sertifikat, kelola pegawai, unit kerja, jadwal, laporan, dan pengumuman. Data diperbarui otomatis setiap 15 detik.</p>
                     </div>
                     <div class="flex flex-wrap items-center gap-2">
                         <button onclick="refreshSpreadsheetData()" class="px-4 py-2.5 bg-white hover:bg-emerald-50 text-uin-primary border border-emerald-200 font-bold rounded-xl transition-all text-xs flex items-center shadow-sm">
@@ -379,8 +379,11 @@
                         <a href="https://docs.google.com/spreadsheets/d/1JUs07WljgRkFgKj5Bq3lPq54QF4-c1R8BUo8Rp7ySpQ/edit" target="_blank" class="px-4 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white font-bold rounded-xl transition-all text-xs flex items-center shadow">
                             <i class="fa-solid fa-file-excel mr-1.5 text-emerald-300 text-sm"></i> Buka Spreadsheet
                         </a>
-                        <a href="https://drive.google.com/drive/folders/1vs1DQlZYtzRpzJTdSM41kU8vmyJNf5uh?usp=drive_link" target="_blank" class="px-4 py-2.5 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-xl transition-all text-xs flex items-center shadow">
-                            <i class="fa-brands fa-google-drive mr-1.5 text-amber-200 text-sm"></i> Buka Google Drive
+                        <a href="https://drive.google.com/drive/folders/1BOpc7urDl_mkUrILfKgfHaj_6wzkRx5L?usp=drive_link" target="_blank" class="px-4 py-2.5 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-xl transition-all text-xs flex items-center shadow">
+                            <i class="fa-brands fa-google-drive mr-1.5 text-amber-200 text-sm"></i> Folder Keahlian
+                        </a>
+                        <a href="https://drive.google.com/drive/folders/1DBalN8Rjjh8ChfmxQWzyGhz8ByDBUTGb?usp=drive_link" target="_blank" class="px-4 py-2.5 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-xl transition-all text-xs flex items-center shadow">
+                            <i class="fa-brands fa-google-drive mr-1.5 text-amber-200 text-sm"></i> Folder Kompetensi
                         </a>
                         <button onclick="logout()" class="px-4 py-2.5 bg-red-100 hover:bg-red-200 text-red-700 font-bold rounded-xl transition-all text-xs flex items-center">
                             <i class="fa-solid fa-right-from-bracket mr-1.5"></i> Keluar Admin
@@ -736,6 +739,23 @@
         </div>
     </div>
 
+    <div id="modal-announcement-preview" class="fixed inset-0 z-[60] bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-3 md:p-6 hidden" role="dialog" aria-modal="true" aria-labelledby="announcement-preview-title">
+        <div class="bg-white w-full max-w-5xl h-[90vh] rounded-2xl shadow-2xl flex flex-col overflow-hidden">
+            <div class="flex items-center justify-between gap-3 px-4 py-3 border-b border-slate-200">
+                <h3 id="announcement-preview-title" class="font-bold text-slate-800 text-sm truncate">Pratinjau Lampiran</h3>
+                <div class="flex items-center gap-2 shrink-0">
+                    <a id="announcement-preview-open" href="#" target="_blank" rel="noopener noreferrer" class="px-3 py-2 bg-emerald-50 text-uin-primary text-xs font-bold rounded-lg border border-emerald-200 hover:bg-emerald-100">Buka file</a>
+                    <button type="button" onclick="closeAnnouncementPreview()" aria-label="Tutup pratinjau" class="w-9 h-9 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+            </div>
+            <div id="announcement-preview-content" class="flex-1 min-h-0 bg-slate-100">
+                <iframe id="announcement-preview-frame" title="Pratinjau lampiran pengumuman" class="w-full h-full hidden" referrerpolicy="no-referrer"></iframe>
+                <img id="announcement-preview-image" alt="Pratinjau lampiran pengumuman" class="w-full h-full object-contain hidden">
+                <p id="announcement-preview-message" class="hidden h-full p-6 text-center text-sm text-slate-600 items-center justify-center"></p>
+            </div>
+        </div>
+    </div>
+
     <!-- Unit Kerja Add Modal -->
     <div id="modal-unit" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 hidden">
         <div class="glass-modal w-full max-w-md p-6 md:p-8 rounded-3xl space-y-6 relative">
@@ -831,7 +851,7 @@
             loadCloudData().finally(checkExistingSession);
             window.setInterval(() => {
                 if (document.visibilityState === 'visible') loadCloudData(true);
-            }, 30000);
+            }, 15000);
         });
 
         async function loadCloudData(silent = false) {
@@ -1276,7 +1296,7 @@
                     </div>
                     <h4 class="font-bold text-slate-900 text-sm">${item.title}</h4>
                     <p class="text-xs text-slate-600">${item.content}</p>
-                    ${item.file_url ? `<div class="mt-2 pt-2 border-t border-slate-100"><a href="${item.file_url}" target="_blank" download="${item.file_name || 'lampiran'}" class="inline-flex items-center px-3 py-1.5 bg-emerald-50 text-uin-primary text-xs font-bold rounded-xl border border-emerald-200 hover:bg-emerald-100 transition-all shadow-sm"><i class="fa-solid fa-paperclip mr-1.5 text-amber-500"></i> ${item.file_name || 'Unduh Lampiran Berkas'}</a></div>` : ''}
+                    ${item.file_url ? `<div class="mt-2 pt-2 border-t border-slate-100"><button type="button" onclick="previewAnnouncementAttachment(this)" data-file-url="${escapeHtml(item.file_url)}" data-file-name="${escapeHtml(getAnnouncementAttachmentLabel(item.file_name))}" class="inline-flex items-center px-3 py-1.5 bg-emerald-50 text-uin-primary text-xs font-bold rounded-xl border border-emerald-200 hover:bg-emerald-100 transition-all shadow-sm"><i class="fa-solid fa-eye mr-1.5 text-amber-500"></i> ${escapeHtml(getAnnouncementAttachmentLabel(item.file_name))}</button></div>` : ''}
                 </div>
             `).join('');
         }
@@ -1869,7 +1889,7 @@
                         </div>
                         <h4 class="font-bold text-slate-900 text-sm">${item.title}</h4>
                         <p class="text-xs text-slate-600 mt-1">${item.content}</p>
-                        ${item.file_url ? `<div class="mt-2"><a href="${item.file_url}" target="_blank" download="${item.file_name || 'lampiran'}" class="inline-flex items-center px-3 py-1 bg-emerald-50 text-uin-primary text-xs font-bold rounded-lg border border-emerald-200 hover:bg-emerald-100 transition-all"><i class="fa-solid fa-paperclip mr-1.5"></i> ${item.file_name || 'Lihat Berkas Lampiran'}</a></div>` : ''}
+                        ${item.file_url ? `<div class="mt-2"><button type="button" onclick="previewAnnouncementAttachment(this)" data-file-url="${escapeHtml(item.file_url)}" data-file-name="${escapeHtml(getAnnouncementAttachmentLabel(item.file_name))}" class="inline-flex items-center px-3 py-1 bg-emerald-50 text-uin-primary text-xs font-bold rounded-lg border border-emerald-200 hover:bg-emerald-100 transition-all"><i class="fa-solid fa-eye mr-1.5"></i> ${escapeHtml(getAnnouncementAttachmentLabel(item.file_name))}</button></div>` : ''}
                     </div>
                     <div class="flex items-center space-x-2 whitespace-nowrap">
                         <button onclick="togglePublishAnnouncement('${item.id || item.title}', '${item.status}')" class="px-3 py-1.5 bg-amber-100 text-amber-800 rounded-xl font-bold text-xs">${item.status === 'published' ? 'Unpublish' : 'Publish'}</button>
@@ -1900,6 +1920,79 @@
         }
 
         function closeAnnouncementModal() { document.getElementById('modal-announcement').classList.add('hidden'); }
+
+        function getAnnouncementAttachmentLabel(fileName) {
+            const name = String(fileName || '').trim();
+            const looksLikeTimestamp = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z?$/.test(name);
+            return !name || looksLikeTimestamp ? 'Pratinjau Lampiran' : name;
+        }
+
+        function previewAnnouncementAttachment(button) {
+            const fileUrl = String(button.dataset.fileUrl || '').trim();
+            const fileName = String(button.dataset.fileName || 'Pratinjau Lampiran');
+            const previewFrame = document.getElementById('announcement-preview-frame');
+            const previewImage = document.getElementById('announcement-preview-image');
+            const previewMessage = document.getElementById('announcement-preview-message');
+            const openLink = document.getElementById('announcement-preview-open');
+            let previewUrl = fileUrl;
+            let isImage = /^data:image\/(?:jpeg|png|gif|webp);base64,/i.test(fileUrl);
+
+            if (/^data:/i.test(fileUrl)) {
+                if (!/^data:(?:application\/pdf|image\/(?:jpeg|png|gif|webp));base64,/i.test(fileUrl)) {
+                    showToast('Format lampiran ini belum didukung untuk pratinjau.', 'error');
+                    return;
+                }
+            } else {
+                let parsedUrl;
+                try {
+                    parsedUrl = new URL(fileUrl, window.location.href);
+                } catch (error) {
+                    showToast('URL lampiran tidak valid.', 'error');
+                    return;
+                }
+                if (!['http:', 'https:'].includes(parsedUrl.protocol) ||
+                    /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z?$/.test(fileUrl)) {
+                    showToast('Lampiran belum memiliki URL file yang valid.', 'error');
+                    return;
+                }
+
+                const driveFileId = parsedUrl.pathname.match(/\/file\/d\/([^/]+)/) ||
+                    parsedUrl.pathname.match(/\/(?:document|spreadsheets|presentation)\/d\/([^/]+)/) ||
+                    parsedUrl.searchParams.get('id');
+                if (parsedUrl.hostname === 'drive.google.com' && driveFileId) {
+                    previewUrl = `https://drive.google.com/file/d/${encodeURIComponent(Array.isArray(driveFileId) ? driveFileId[1] : driveFileId)}/preview`;
+                } else if (parsedUrl.hostname === 'docs.google.com') {
+                    const docsId = parsedUrl.pathname.match(/\/(?:document|spreadsheets|presentation)\/d\/([^/]+)/);
+                    if (docsId) previewUrl = `https://docs.google.com${parsedUrl.pathname.match(/^\/(?:document|spreadsheets|presentation)/)[0]}/d/${encodeURIComponent(docsId[1])}/preview`;
+                }
+                isImage = /\.(?:jpe?g|png|gif|webp)(?:$|[?#])/i.test(parsedUrl.pathname + parsedUrl.search);
+            }
+
+            previewFrame.classList.add('hidden');
+            previewImage.classList.add('hidden');
+            previewMessage.classList.add('hidden');
+            previewMessage.classList.remove('flex');
+            previewFrame.removeAttribute('src');
+            previewImage.removeAttribute('src');
+            document.getElementById('announcement-preview-title').textContent = fileName;
+            openLink.href = fileUrl;
+            openLink.classList.remove('hidden');
+
+            if (isImage) {
+                previewImage.src = previewUrl;
+                previewImage.classList.remove('hidden');
+            } else {
+                previewFrame.src = previewUrl;
+                previewFrame.classList.remove('hidden');
+            }
+            document.getElementById('modal-announcement-preview').classList.remove('hidden');
+        }
+
+        function closeAnnouncementPreview() {
+            document.getElementById('announcement-preview-frame').removeAttribute('src');
+            document.getElementById('announcement-preview-image').removeAttribute('src');
+            document.getElementById('modal-announcement-preview').classList.add('hidden');
+        }
 
         async function handleAnnouncementSubmit(e) {
             e.preventDefault();

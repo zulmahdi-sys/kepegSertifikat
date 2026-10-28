@@ -3,7 +3,10 @@
 // ==============================================================================
 
 var SPREADSHEET_ID = '1JUs07WljgRkFgKj5Bq3lPq54QF4-c1R8BUo8Rp7ySpQ';
-var CERTIFICATE_FOLDER_ID = '1vs1DQlZYtzRpzJTdSM41kU8vmyJNf5uh';
+var CERTIFICATE_FOLDER_IDS = {
+  'Sertifikat Keahlian': '1BOpc7urDl_mkUrILfKgfHaj_6wzkRx5L',
+  'Sertifikat Kompetensi': '1DBalN8Rjjh8ChfmxQWzyGhz8ByDBUTGb'
+};
 
 function doGet(e) {
   var ss = SpreadsheetApp.openById(SPREADSHEET_ID);
@@ -250,6 +253,10 @@ function saveCertificateFile(data) {
   if (!match) {
     throw new Error('File upload must contain a valid PDF or JPG data URL.');
   }
+  var folderId = CERTIFICATE_FOLDER_IDS[String(data.kategori || '')];
+  if (!folderId) {
+    throw new Error('Kategori sertifikat tidak valid untuk menentukan folder penyimpanan.');
+  }
 
   var bytes = Utilities.base64Decode(match[2]);
   if (bytes.length === 0 || bytes.length > 2 * 1024 * 1024) {
@@ -268,7 +275,7 @@ function saveCertificateFile(data) {
 
   var fileName = String(data.file_name || 'sertifikat').replace(/[\\\/:*?"<>|]/g, '_').substring(0, 150);
   var blob = Utilities.newBlob(bytes, mimeType, fileName);
-  return DriveApp.getFolderById(CERTIFICATE_FOLDER_ID).createFile(blob);
+  return DriveApp.getFolderById(folderId).createFile(blob);
 }
 
 function trashDriveFile(fileId) {

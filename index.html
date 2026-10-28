@@ -71,6 +71,59 @@
             display: inline-block;
             animation: marquee 25s linear infinite;
         }
+        .chart-3d-stage {
+            perspective: 900px;
+        }
+        .chart-3d-column {
+            perspective: 700px;
+        }
+        .chart-3d-bar {
+            position: relative;
+            width: 2rem;
+            height: var(--bar-height);
+            transform-style: preserve-3d;
+            transform: rotateY(-18deg);
+            transform-origin: bottom center;
+            animation: chart-rise 900ms cubic-bezier(0.2, 0.75, 0.25, 1) both;
+            animation-delay: var(--bar-delay, 0ms);
+        }
+        .chart-3d-front,
+        .chart-3d-side,
+        .chart-3d-top {
+            position: absolute;
+        }
+        .chart-3d-front {
+            inset: 0;
+            background: linear-gradient(160deg, #34d399 0%, #059669 52%, #064e3b 100%);
+            border: 1px solid rgba(255, 255, 255, 0.45);
+            box-shadow: inset 3px 0 8px rgba(255, 255, 255, 0.18), 8px 8px 16px rgba(6, 78, 59, 0.16);
+        }
+        .chart-3d-side {
+            top: 0;
+            left: 100%;
+            width: 0.65rem;
+            height: 100%;
+            background: linear-gradient(180deg, #047857, #022c22);
+            transform: rotateY(90deg);
+            transform-origin: left center;
+        }
+        .chart-3d-top {
+            top: 0;
+            left: 0;
+            width: 2rem;
+            height: 0.65rem;
+            background: linear-gradient(90deg, #a7f3d0, #34d399);
+            transform: rotateX(90deg);
+            transform-origin: center top;
+        }
+        @keyframes chart-rise {
+            from { transform: rotateY(-18deg) scaleY(0.08); opacity: 0.35; }
+            to { transform: rotateY(-18deg) scaleY(1); opacity: 1; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .running-text-content { animation: none; }
+            .chart-3d-bar { animation: none; }
+        }
         @keyframes marquee {
             0% { transform: translateX(100%); }
             100% { transform: translateX(-100%); }
@@ -138,14 +191,12 @@
         </header>
 
         <!-- RUNNING TEXT BANNER -->
-        <div class="bg-uin-primary text-emerald-100 py-2.5 px-4 text-xs font-bold flex items-center shadow-inner border-y border-emerald-800">
+        <div id="running-text-banner" class="bg-uin-primary text-emerald-100 py-2.5 px-4 text-xs font-bold flex items-center shadow-inner border-y border-emerald-800">
             <div class="bg-amber-500 text-amber-950 px-2.5 py-1 rounded-md uppercase tracking-wider text-[10px] mr-3 font-extrabold shrink-0 shadow">
                 <i class="fa-solid fa-bullhorn mr-1"></i> Informasi Penting
             </div>
             <div class="running-text-container">
-                <div class="running-text-content">
-                    Selamat Datang di Portal Resmi Pengumpulan Sertifikat Dosen & Tendik UIN Ar-Raniry Banda Aceh Tahun 2026. Batas Akhir Unggah Berkas adalah 30 Oktober 2026 pukul 23:59 WIB. Pastikan seluruh dokumen berkas keahlian dan kompetensi telah divalidasi dengan benar.
-                </div>
+                <div id="running-text-content" class="running-text-content" aria-live="polite">Memuat informasi penting...</div>
             </div>
         </div>
 
@@ -158,8 +209,8 @@
                 <div class="glass-card rounded-3xl p-6 md:p-12 text-center relative overflow-hidden bg-gradient-to-br from-emerald-900 via-emerald-800 to-teal-900 text-white shadow-2xl">
                     <div class="absolute -right-20 -bottom-20 w-80 h-80 bg-white/10 rounded-full blur-2xl pointer-events-none"></div>
                     <span class="inline-block px-4 py-1.5 rounded-full bg-amber-400 text-amber-950 font-bold text-xs uppercase tracking-widest mb-4 shadow-md">Pendaftaran Dibuka</span>
-                    <h2 class="text-2xl md:text-5xl font-black tracking-tight mb-4">JADWAL PENGIRIMAN / PENGUMPULAN SERTIFIKAT</h2>
-                    <p class="text-emerald-100 max-w-2xl mx-auto text-xs md:text-base mb-8">UIN A-RANIRY BANDA ACEH, KAMPUS ENERGI KEBANGSAAN, SINERGI MEMBANGUN NEGERI</p>
+                    <h2 class="text-2xl md:text-5xl font-black tracking-tight mb-4">PENGUMPULAN SERTIFIKAT</h2>
+                    <p class="text-emerald-100 max-w-2xl mx-auto text-xs md:text-base mb-8">UIN AR-RANIRY BANDA ACEH, KAMPUS ENERGI KEBANGSAAN, SINERGI MEMBANGUN NEGERI</p>
                     
                     <!-- Countdown Timer -->
                     <div class="inline-flex items-center space-x-2 bg-white/10 backdrop-blur-md px-6 py-3 rounded-2xl border border-white/20 text-xs md:text-sm font-semibold mb-8 shadow-inner">
@@ -289,9 +340,9 @@
                     <section class="glass-card p-6 md:p-8 rounded-3xl space-y-5 lg:col-span-5 w-full">
                         <div>
                             <h3 class="text-lg font-bold text-uin-primary"><i class="fa-solid fa-chart-column mr-2 text-amber-500"></i>Jumlah Sertifikat per Unit Kerja</h3>
-                            <p class="text-xs text-slate-500 mt-1">Grafik menunjukkan jumlah sertifikat yang telah dikirim dari setiap unit kerja.</p>
+                            <p class="text-xs text-slate-500 mt-1">Grafik batang 3D beranimasi menunjukkan jumlah sertifikat yang telah dikirim dari setiap unit kerja.</p>
                         </div>
-                        <div id="unit-submission-chart" class="overflow-x-auto" role="img" aria-label="Grafik jumlah sertifikat per unit kerja"></div>
+                        <div id="unit-submission-chart" class="chart-3d-stage overflow-x-auto" role="img" aria-label="Grafik batang tiga dimensi jumlah sertifikat per unit kerja"></div>
                     </section>
                 </div>
             </div>
@@ -399,6 +450,7 @@
                     <button onclick="switchAdminTab('schedule')" id="adm-tab-schedule" class="px-4 py-2.5 rounded-xl font-bold text-xs bg-white/60 text-slate-700 hover:bg-white transition-all whitespace-nowrap"><i class="fa-solid fa-calendar-days mr-2"></i> Jadwal Buka-Tutup</button>
                     <button onclick="switchAdminTab('reports')" id="adm-tab-reports" class="px-4 py-2.5 rounded-xl font-bold text-xs bg-white/60 text-slate-700 hover:bg-white transition-all whitespace-nowrap"><i class="fa-solid fa-print mr-2"></i> Cetak Laporan & Arsip</button>
                     <button onclick="switchAdminTab('announcements')" id="adm-tab-announcements" class="px-4 py-2.5 rounded-xl font-bold text-xs bg-white/60 text-slate-700 hover:bg-white transition-all whitespace-nowrap"><i class="fa-solid fa-bullhorn mr-2"></i> Kelola Pengumuman</button>
+                    <button onclick="switchAdminTab('running-text')" id="adm-tab-running-text" class="px-4 py-2.5 rounded-xl font-bold text-xs bg-white/60 text-slate-700 hover:bg-white transition-all whitespace-nowrap"><i class="fa-solid fa-scroll mr-2"></i> Informasi Penting</button>
                 </div>
 
                 <!-- Tab Content 1: Monitoring & Verifikasi -->
@@ -559,8 +611,39 @@
                                 <i class="fa-solid fa-plus mr-1.5"></i> Buat Pengumuman Baru
                             </button>
                         </div>
+
                         <div id="admin-announcements-container" class="space-y-4">
                             <!-- Dynamic list -->
+                        </div>
+                    </div>
+                </div>
+
+                <div id="adm-content-running-text" class="space-y-4 hidden">
+                    <div class="glass-card p-6 rounded-3xl space-y-5">
+                        <div>
+                            <h3 class="font-bold text-slate-800 text-lg">Pengaturan Informasi Penting</h3>
+                            <p class="text-xs text-slate-500 mt-1">Tambah, edit, hapus, atau unpublish pesan yang berjalan di bagian atas halaman. Hanya informasi berstatus Published yang terlihat oleh publik.</p>
+                        </div>
+                        <form id="running-text-form" onsubmit="saveRunningText(event)" class="grid grid-cols-1 md:grid-cols-[1fr_auto_auto] gap-3 items-end">
+                            <input type="hidden" id="running-text-id">
+                            <div>
+                                <label for="running-text-message" class="block text-xs font-bold text-slate-700 uppercase mb-1">Pesan Running Text</label>
+                                <textarea id="running-text-message" required maxlength="500" rows="2" placeholder="Tulis informasi penting untuk ditampilkan di beranda..." class="w-full px-4 py-2.5 bg-white/70 border border-slate-200 rounded-xl text-sm"></textarea>
+                            </div>
+                            <div>
+                                <label for="running-text-status" class="block text-xs font-bold text-slate-700 uppercase mb-1">Status</label>
+                                <select id="running-text-status" class="w-full px-4 py-2.5 bg-white/70 border border-slate-200 rounded-xl text-xs">
+                                    <option value="published">Published</option>
+                                    <option value="draft">Unpublish (Draft)</option>
+                                </select>
+                            </div>
+                            <div class="flex gap-2">
+                                <button type="submit" class="px-4 py-2.5 bg-uin-primary text-white font-bold rounded-xl text-xs shadow hover:bg-uin-secondary transition-all"><i class="fa-solid fa-floppy-disk mr-1"></i> Simpan</button>
+                                <button type="button" onclick="resetRunningTextForm()" class="px-4 py-2.5 bg-slate-100 text-slate-700 font-bold rounded-xl text-xs hover:bg-slate-200 transition-all">Batal</button>
+                            </div>
+                        </form>
+                        <div id="admin-running-text-list" class="space-y-3">
+                            <p class="text-xs text-slate-500 italic text-center py-4">Belum ada informasi penting.</p>
                         </div>
                     </div>
                 </div>
@@ -829,6 +912,7 @@
         let selectedParticipantForDetail = null;
         let cloudDataLoading = false;
         let cloudDataInitialized = false;
+        let runningTextBackendAvailable = false;
 
         // Toast Notification System
         function showToast(message, type = 'success') {
@@ -848,11 +932,23 @@
         // Initialize on load
         window.addEventListener('DOMContentLoaded', () => {
             initCountdown();
+            renderPublicHomeFromCache();
             loadCloudData().finally(checkExistingSession);
             window.setInterval(() => {
                 if (document.visibilityState === 'visible') loadCloudData(true);
             }, 15000);
         });
+
+        function renderPublicHomeFromCache() {
+            fetchSystemStats();
+            renderPublicRunningText();
+            if (localStorage.getItem('uin_local_announcements') !== null) {
+                loadPublicAnnouncements();
+            } else {
+                document.getElementById('public-announcements-list').innerHTML =
+                    '<p class="text-xs text-slate-500 italic">Memuat pengumuman terbaru...</p>';
+            }
+        }
 
         async function loadCloudData(silent = false) {
             if (cloudDataLoading) return false;
@@ -866,6 +962,7 @@
                 let certificatesChanged = false;
                 let announcementsChanged = false;
                 let unitsChanged = false;
+                let runningTextChanged = false;
                 if (Array.isArray(result.pegawai)) {
                     const users = JSON.stringify(result.pegawai.map(normalizeSheetUser));
                     usersChanged = localStorage.getItem('uin_local_users') !== users;
@@ -886,6 +983,12 @@
                     unitsChanged = localStorage.getItem('uin_local_units') !== units;
                     if (unitsChanged) localStorage.setItem('uin_local_units', units);
                 }
+                if (Array.isArray(result.running_text)) {
+                    runningTextBackendAvailable = true;
+                    const runningTexts = JSON.stringify(result.running_text.map(normalizeSheetRunningText));
+                    runningTextChanged = localStorage.getItem('uin_local_running_text') !== runningTexts;
+                    if (runningTextChanged) localStorage.setItem('uin_local_running_text', runningTexts);
+                }
                 const shouldRenderInitialData = !cloudDataInitialized;
                 if (currentUser && currentUser.role !== 'admin' &&
                     !result.pegawai.some(user => String(user.nip || user.NIP) === String(currentUser.nip))) {
@@ -897,12 +1000,14 @@
                 }
                 if (unitsChanged || shouldRenderInitialData) populateUnitDropdowns();
                 if (announcementsChanged || shouldRenderInitialData) loadPublicAnnouncements();
+                if (runningTextChanged || shouldRenderInitialData) renderPublicRunningText();
                 if (usersChanged || certificatesChanged || unitsChanged || shouldRenderInitialData) fetchSystemStats();
                 if (currentUser && currentUser.role === 'admin') {
                     if (usersChanged || certificatesChanged || shouldRenderInitialData) loadAdminMonitoring();
                     if (usersChanged || shouldRenderInitialData) loadAdminMasterDB();
                     if (unitsChanged || shouldRenderInitialData) loadAdminUnitsTable();
                     if (announcementsChanged || shouldRenderInitialData) loadAdminAnnouncements();
+                    if (runningTextChanged || shouldRenderInitialData) loadAdminRunningTexts();
                     if (usersChanged || certificatesChanged || shouldRenderInitialData) loadReportData();
                 } else if (currentUser) {
                     if (certificatesChanged || shouldRenderInitialData) loadUserCertificates();
@@ -976,6 +1081,29 @@
                 file_name: announcement.file_name || announcement['File Name'] || '',
                 created_at: announcement.created_at || announcement['Created At'] || ''
             };
+        }
+
+        function normalizeSheetRunningText(item) {
+            return {
+                ...item,
+                id: String(item.id || item.ID || ''),
+                message: item.message || item.Message || '',
+                status: String(item.status || item.Status || 'draft').toLowerCase(),
+                updated_at: item.updated_at || item['Updated At'] || ''
+            };
+        }
+
+        function renderPublicRunningText() {
+            const banner = document.getElementById('running-text-banner');
+            const content = document.getElementById('running-text-content');
+            if (!banner || !content) return;
+            const runningTexts = JSON.parse(localStorage.getItem('uin_local_running_text') || '[]')
+                .map(normalizeSheetRunningText)
+                .filter(item => item.status === 'published' && item.message.trim());
+            content.innerHTML = runningTexts.length
+                ? runningTexts.map(item => escapeHtml(item.message.trim())).join(' &nbsp;&nbsp; • &nbsp;&nbsp; ')
+                : '';
+            banner.classList.toggle('hidden', runningTexts.length === 0);
         }
 
         function normalizeSheetUnit(unit) {
@@ -1221,6 +1349,7 @@
             loadAdminMasterDB();
             loadAdminUnitsTable();
             loadAdminAnnouncements();
+            loadAdminRunningTexts();
             loadReportData();
         }
 
@@ -1262,17 +1391,21 @@
             const maxCount = Math.max(1, ...data.map(unit => unit.count));
             const chartHeight = 220;
             chart.innerHTML = data.length ? `
-                <div class="flex items-end gap-3 min-w-max px-2 pt-4">
-                    ${data.map(unit => {
-                const height = unit.count === 0 ? 0 : Math.max(8, Math.round(unit.count / maxCount * chartHeight));
-                const name = escapeHTML(unit.name);
+                <div class="flex items-end gap-5 min-w-max px-4 pt-8 pb-2">
+                    ${data.map((unit, index) => {
+                const height = unit.count === 0 ? 4 : Math.max(10, Math.round(unit.count / maxCount * chartHeight));
+                const name = escapeHTML(unit.name || 'Unit tidak diketahui');
                 return `
-                    <div class="flex w-16 shrink-0 flex-col items-center text-center">
-                        <strong class="mb-1 text-xs text-uin-primary">${unit.count}</strong>
-                        <div class="flex h-[220px] w-10 items-end justify-center border-b border-slate-300 bg-slate-50/70" role="progressbar" aria-label="${name}" aria-valuemin="0" aria-valuemax="${maxCount}" aria-valuenow="${unit.count}">
-                            <div class="w-7 rounded-t-lg bg-gradient-to-t from-emerald-800 to-teal-400 transition-all" style="height: ${height}px"></div>
+                    <div class="chart-3d-column flex w-20 shrink-0 flex-col items-center text-center" title="${name}: ${unit.count} sertifikat">
+                        <strong class="mb-3 text-sm font-extrabold text-uin-primary">${unit.count}</strong>
+                        <div class="flex h-[220px] w-full items-end justify-center border-b border-slate-300/80 bg-gradient-to-t from-slate-100/80 to-white/30" role="progressbar" aria-label="${name}" aria-valuemin="0" aria-valuemax="${maxCount}" aria-valuenow="${unit.count}">
+                            <div class="chart-3d-bar" style="--bar-height: ${height}px; --bar-delay: ${Math.min(index * 45, 600)}ms">
+                                <span class="chart-3d-front"></span>
+                                <span class="chart-3d-side"></span>
+                                <span class="chart-3d-top"></span>
+                            </div>
                         </div>
-                        <span class="mt-2 w-16 text-[10px] leading-tight text-slate-600 break-words" title="${name}">${name}</span>
+                        <span class="mt-3 w-20 text-[10px] leading-tight text-slate-600 break-words">${name}</span>
                     </div>
                 `;
             }).join('')}
@@ -1474,7 +1607,7 @@
 
         // Admin Tabs & Management
         function switchAdminTab(tab) {
-            ['monitoring', 'master', 'units', 'schedule', 'reports', 'announcements'].forEach(t => {
+            ['monitoring', 'master', 'units', 'schedule', 'reports', 'announcements', 'running-text'].forEach(t => {
                 document.getElementById(`adm-content-${t}`).classList.add('hidden');
                 document.getElementById(`adm-tab-${t}`).className = 'px-4 py-2.5 rounded-xl font-bold text-xs bg-white/60 text-slate-700 hover:bg-white transition-all whitespace-nowrap';
             });
@@ -1992,6 +2125,151 @@
             document.getElementById('announcement-preview-frame').removeAttribute('src');
             document.getElementById('announcement-preview-image').removeAttribute('src');
             document.getElementById('modal-announcement-preview').classList.add('hidden');
+        }
+
+        function loadAdminRunningTexts() {
+            const container = document.getElementById('admin-running-text-list');
+            if (!container) return;
+            const runningTexts = JSON.parse(localStorage.getItem('uin_local_running_text') || '[]')
+                .map(normalizeSheetRunningText);
+            if (runningTexts.length === 0) {
+                container.innerHTML = '<p class="text-xs text-slate-500 italic text-center py-4">Belum ada informasi penting. Tambahkan pesan melalui formulir di atas.</p>';
+                return;
+            }
+            container.innerHTML = runningTexts.map(item => `
+                <div class="p-4 bg-white/70 border border-slate-200 rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
+                    <div class="min-w-0">
+                        <span class="inline-flex px-2 py-1 mb-2 rounded text-[10px] font-bold ${item.status === 'published' ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-200 text-slate-700'}">${item.status === 'published' ? 'PUBLISHED' : 'UNPUBLISHED'}</span>
+                        <p class="text-sm text-slate-800 break-words">${escapeHtml(item.message)}</p>
+                    </div>
+                    <div class="flex items-center gap-2 shrink-0">
+                        <button type="button" data-running-text-action="toggle" data-id="${escapeHtml(item.id)}" class="px-3 py-1.5 bg-amber-100 text-amber-800 rounded-lg font-bold text-xs">${item.status === 'published' ? 'Unpublish' : 'Publish'}</button>
+                        <button type="button" data-running-text-action="edit" data-id="${escapeHtml(item.id)}" class="px-3 py-1.5 bg-blue-100 text-blue-700 rounded-lg font-bold text-xs"><i class="fa-solid fa-pen mr-1"></i>Edit</button>
+                        <button type="button" data-running-text-action="delete" data-id="${escapeHtml(item.id)}" class="px-3 py-1.5 bg-red-100 text-red-700 rounded-lg font-bold text-xs"><i class="fa-solid fa-trash mr-1"></i>Hapus</button>
+                    </div>
+                </div>
+            `).join('');
+            container.querySelectorAll('[data-running-text-action]').forEach(button => {
+                button.addEventListener('click', () => {
+                    const item = runningTexts.find(entry => entry.id === button.dataset.id);
+                    if (!item) return;
+                    if (button.dataset.runningTextAction === 'edit') editRunningText(item.id);
+                    if (button.dataset.runningTextAction === 'toggle') toggleRunningText(item.id);
+                    if (button.dataset.runningTextAction === 'delete') deleteRunningText(item.id);
+                });
+            });
+        }
+
+        function resetRunningTextForm() {
+            document.getElementById('running-text-form').reset();
+            document.getElementById('running-text-id').value = '';
+            document.getElementById('running-text-status').value = 'published';
+        }
+
+        function editRunningText(identifier) {
+            const item = JSON.parse(localStorage.getItem('uin_local_running_text') || '[]')
+                .map(normalizeSheetRunningText)
+                .find(entry => entry.id === identifier);
+            if (!item) return;
+            document.getElementById('running-text-id').value = item.id;
+            document.getElementById('running-text-message').value = item.message;
+            document.getElementById('running-text-status').value = item.status;
+            document.getElementById('running-text-message').focus();
+        }
+
+        async function persistRunningText(record, previousItems, successMessage) {
+            const updatedItems = previousItems.some(item => item.id === record.id)
+                ? previousItems.map(item => item.id === record.id ? record : item)
+                : [record, ...previousItems];
+            localStorage.setItem('uin_local_running_text', JSON.stringify(updatedItems));
+            renderPublicRunningText();
+            loadAdminRunningTexts();
+
+            const sent = await sendCloudMutation({
+                type: 'save_running_text',
+                id: record.id,
+                message: record.message,
+                status: record.status
+            });
+            if (sent) {
+                await new Promise(resolve => window.setTimeout(resolve, 400));
+                const refreshed = await loadCloudData(true);
+                const saved = JSON.parse(localStorage.getItem('uin_local_running_text') || '[]')
+                    .map(normalizeSheetRunningText)
+                    .find(item => item.id === record.id);
+                if (refreshed && runningTextBackendAvailable && saved && saved.message === record.message && saved.status === record.status) {
+                    resetRunningTextForm();
+                    showToast(successMessage);
+                    return true;
+                }
+            }
+
+            localStorage.setItem('uin_local_running_text', JSON.stringify(previousItems));
+            renderPublicRunningText();
+            loadAdminRunningTexts();
+            showToast('Informasi penting gagal disinkronkan. Periksa deployment Apps Script dan coba lagi.', 'error');
+            return false;
+        }
+
+        async function saveRunningText(event) {
+            event.preventDefault();
+            const message = document.getElementById('running-text-message').value.trim();
+            if (!message) {
+                showToast('Pesan informasi penting wajib diisi.', 'error');
+                return;
+            }
+            const previousItems = JSON.parse(localStorage.getItem('uin_local_running_text') || '[]')
+                .map(normalizeSheetRunningText);
+            const id = document.getElementById('running-text-id').value || `running_${Date.now()}`;
+            const existing = previousItems.find(item => item.id === id);
+            const record = {
+                id,
+                message,
+                status: document.getElementById('running-text-status').value,
+                updated_at: new Date().toISOString()
+            };
+            await persistRunningText(record, previousItems, existing ? 'Informasi penting berhasil diperbarui.' : 'Informasi penting berhasil ditambahkan.');
+        }
+
+        async function toggleRunningText(identifier) {
+            const previousItems = JSON.parse(localStorage.getItem('uin_local_running_text') || '[]')
+                .map(normalizeSheetRunningText);
+            const item = previousItems.find(entry => entry.id === identifier);
+            if (!item) return;
+            const record = {
+                ...item,
+                status: item.status === 'published' ? 'draft' : 'published',
+                updated_at: new Date().toISOString()
+            };
+            await persistRunningText(record, previousItems, record.status === 'published'
+                ? 'Informasi penting berhasil dipublikasikan.'
+                : 'Informasi penting berhasil di-unpublish.');
+        }
+
+        async function deleteRunningText(identifier) {
+            if (!confirm('Hapus informasi penting ini?')) return;
+            const previousItems = JSON.parse(localStorage.getItem('uin_local_running_text') || '[]')
+                .map(normalizeSheetRunningText);
+            const remainingItems = previousItems.filter(item => item.id !== identifier);
+            localStorage.setItem('uin_local_running_text', JSON.stringify(remainingItems));
+            renderPublicRunningText();
+            loadAdminRunningTexts();
+            const sent = await sendCloudMutation({ type: 'delete_running_text', id: identifier });
+            if (sent) {
+                await new Promise(resolve => window.setTimeout(resolve, 400));
+                const refreshed = await loadCloudData(true);
+                const stillExists = JSON.parse(localStorage.getItem('uin_local_running_text') || '[]')
+                    .map(normalizeSheetRunningText)
+                    .some(item => item.id === identifier);
+                if (refreshed && runningTextBackendAvailable && !stillExists) {
+                    showToast('Informasi penting berhasil dihapus.');
+                    return;
+                }
+            }
+            localStorage.setItem('uin_local_running_text', JSON.stringify(previousItems));
+            renderPublicRunningText();
+            loadAdminRunningTexts();
+            showToast('Informasi penting gagal dihapus dari spreadsheet. Periksa deployment Apps Script.', 'error');
         }
 
         async function handleAnnouncementSubmit(e) {

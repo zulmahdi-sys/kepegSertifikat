@@ -33,7 +33,22 @@ function doGet(e) {
     announcementSheet.appendRow(['ID', 'Title', 'Content', 'Status', 'File URL', 'File Name', 'Created At']);
   }
 
-  // 4. UnitKerja Sheet
+  // 4. Running Text Sheet
+  var runningTextSheet = ss.getSheetByName('RunningText');
+  if (!runningTextSheet) {
+    runningTextSheet = ss.insertSheet('RunningText');
+    runningTextSheet.appendRow(['ID', 'Message', 'Status', 'Updated At']);
+    runningTextSheet.appendRow([
+      'running_text_initial',
+      'Selamat Datang di Portal Resmi Pengumpulan Sertifikat Dosen & Tendik UIN Ar-Raniry Banda Aceh Tahun 2026. Batas Akhir Unggah Berkas adalah 30 Oktober 2026 pukul 23:59 WIB. Pastikan seluruh dokumen berkas keahlian dan kompetensi telah divalidasi dengan benar.',
+      'published',
+      new Date()
+    ]);
+  } else if (runningTextSheet.getLastRow() === 0) {
+    runningTextSheet.appendRow(['ID', 'Message', 'Status', 'Updated At']);
+  }
+
+  // 5. UnitKerja Sheet
   var unitSheet = ss.getSheetByName('UnitKerja') || ss.insertSheet('UnitKerja');
   if (unitSheet.getLastRow() === 0) {
     unitSheet.appendRow(['ID', 'Nama Unit']);
@@ -54,6 +69,7 @@ function doGet(e) {
     var pegawai = sheetToJSON(pegawaiSheet);
     var sertifikat = sheetToJSON(sertifikatSheet);
     var announcements = sheetToJSON(announcementSheet);
+    var running_text = sheetToJSON(runningTextSheet);
     var unit_kerja = sheetToJSON(unitSheet).map(function(unit) {
       return {
         id: unit.ID,
@@ -66,6 +82,7 @@ function doGet(e) {
       pegawai: pegawai,
       sertifikat: sertifikat,
       announcements: announcements,
+      running_text: running_text,
       unit_kerja: unit_kerja
     })).setMimeType(ContentService.MimeType.JSON);
   }
@@ -248,6 +265,52 @@ function doPost(e) {
           var matchesAnnouncementTitle = !data.id && data.title && String(rows[i][1]) === String(data.title);
           if (matchesAnnouncementId || matchesAnnouncementTitle) {
             sheet.deleteRow(i + 1);
+          }
+        }
+      }
+    }
+    else if (data.type === 'save_running_text') {
+      var runningTextSheet = ss.getSheetByName('RunningText') || ss.insertSheet('RunningText');
+      if (runningTextSheet.getLastRow() === 0) {
+        runningTextSheet.appendRow(['ID', 'Message', 'Status', 'Updated At']);
+      }
+      var runningTextRows = runningTextSheet.getDataRange().getValues();
+      var runningTextHeaders = runningTextRows[0];
+      var runningTextIdColumn = runningTextHeaders.indexOf('ID');
+      var runningTextRowIndex = -1;
+      if (runningTextIdColumn < 0) throw new Error('Kolom ID tidak ditemukan pada sheet RunningText.');
+      for (var runningTextIndex = 1; runningTextIndex < runningTextRows.length; runningTextIndex++) {
+        if (String(runningTextRows[runningTextIndex][runningTextIdColumn]) === String(data.id)) {
+          runningTextRowIndex = runningTextIndex + 1;
+          break;
+        }
+      }
+      var runningTextRecord = {
+        'ID': data.id,
+        'Message': data.message,
+        'Status': data.status,
+        'Updated At': new Date()
+      };
+      if (runningTextRowIndex > 0) {
+        runningTextHeaders.forEach(function(header, columnIndex) {
+          if (runningTextRecord[header] !== undefined) {
+            runningTextSheet.getRange(runningTextRowIndex, columnIndex + 1).setValue(runningTextRecord[header]);
+          }
+        });
+      } else {
+        runningTextSheet.appendRow(runningTextHeaders.map(function(header) {
+          return runningTextRecord[header] === undefined ? '' : runningTextRecord[header];
+        }));
+      }
+    }
+    else if (data.type === 'delete_running_text') {
+      var runningTextSheet = ss.getSheetByName('RunningText');
+      if (runningTextSheet && runningTextSheet.getLastRow() > 1) {
+        var runningTextRows = runningTextSheet.getDataRange().getValues();
+        var runningTextIdColumn = runningTextRows[0].indexOf('ID');
+        for (var runningTextIndex = runningTextRows.length - 1; runningTextIndex >= 1; runningTextIndex--) {
+          if (runningTextIdColumn >= 0 && String(runningTextRows[runningTextIndex][runningTextIdColumn]) === String(data.id)) {
+            runningTextSheet.deleteRow(runningTextIndex + 1);
           }
         }
       }

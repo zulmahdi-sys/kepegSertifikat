@@ -413,51 +413,6 @@ function saveCertificateFile(data) {
   return DriveApp.getFolderById(folderId).createFile(blob);
 }
 
-function saveRegisteredEmployee(ss, data) {
-  var nip = String(data.nip || '').trim();
-  var password = String(data.password || '').trim();
-  if (!nip || !password) {
-    throw new Error('NIP dan kata sandi wajib diisi.');
-  }
-
-  var sheet = ss.getSheetByName('Pegawai') || ss.insertSheet('Pegawai');
-  if (sheet.getLastRow() === 0) {
-    sheet.appendRow(['NIP', 'Nama', 'WhatsApp', 'Email', 'Jabatan', 'Unit Kerja', 'Created At', 'Role', 'Password']);
-  }
-  ensureHeaderColumn(sheet, 'Password');
-  var lastColumn = sheet.getLastColumn();
-  var headers = sheet.getRange(1, 1, 1, lastColumn).getValues()[0];
-  var nipColumn = headers.indexOf('NIP');
-  if (nipColumn < 0) throw new Error('Kolom NIP tidak ditemukan pada sheet Pegawai.');
-
-  var lastRow = sheet.getLastRow();
-  if (lastRow > 1) {
-    var nipValues = sheet.getRange(2, nipColumn + 1, lastRow - 1, 1).getDisplayValues();
-    for (var index = 0; index < nipValues.length; index++) {
-      if (String(nipValues[index][0]).trim() === nip) {
-        throw new Error('NIP tersebut sudah terdaftar.');
-      }
-    }
-  }
-
-  var employee = {
-    'NIP': nip,
-    'Nama': data.nama || '',
-    'WhatsApp': data.whatsapp || '',
-    'Email': data.email || '',
-    'Jabatan': data.jabatan || '',
-    'Unit Kerja': data.unit_kerja || '',
-    'Created At': new Date(),
-    'Role': data.role || 'user',
-    'Password': password
-  };
-  var targetRow = lastRow + 1;
-  sheet.getRange(targetRow, nipColumn + 1).setNumberFormat('@');
-  sheet.appendRow(headers.map(function(header) {
-    return employee[header] === undefined ? '' : employee[header];
-  }));
-}
-
 function trashDriveFile(fileId) {
   DriveApp.getFileById(String(fileId)).setTrashed(true);
 }

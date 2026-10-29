@@ -733,7 +733,17 @@
                     <label class="block text-xs font-bold text-slate-700 uppercase mb-1">File Berkas (PDF / JPG Max 2MB)</label>
                     <input type="file" id="upload-file" accept=".pdf,.jpg,.jpeg" required class="w-full px-4 py-2.5 rounded-xl bg-white/60 border border-slate-200 text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-uin-primary file:text-white hover:file:bg-uin-secondary">
                 </div>
-                <button type="submit" class="w-full py-3.5 bg-uin-primary hover:bg-uin-secondary text-white font-bold rounded-xl shadow-lg transition-all">
+                <div id="upload-progress" class="hidden p-4 rounded-xl bg-emerald-50 border border-emerald-200" role="status" aria-live="polite">
+                    <div class="flex items-center gap-3">
+                        <i id="upload-progress-icon" class="fa-solid fa-spinner fa-spin text-uin-primary"></i>
+                        <p id="upload-progress-message" class="text-xs font-bold text-uin-primary">Menyiapkan berkas...</p>
+                    </div>
+                    <div class="mt-3 h-2 rounded-full bg-emerald-100 overflow-hidden">
+                        <div id="upload-progress-bar" class="h-full w-1/3 rounded-full bg-emerald-600 transition-all duration-500"></div>
+                    </div>
+                    <p id="upload-progress-detail" class="mt-2 text-[10px] text-slate-500">Mohon jangan tutup halaman selama proses berlangsung.</p>
+                </div>
+                <button id="upload-submit-button" type="submit" class="w-full py-3.5 bg-uin-primary hover:bg-uin-secondary text-white font-bold rounded-xl shadow-lg transition-all">
                     UNGGAH & SIMPAN BERKAS
                 </button>
             </form>
@@ -930,6 +940,7 @@
         let cloudDataLoading = false;
         let cloudDataInitialized = false;
         let runningTextBackendAvailable = false;
+        let certificateUploadInProgress = false;
 
         // Toast Notification System
         function showToast(message, type = 'success') {
@@ -1388,7 +1399,7 @@
             return defaults;
         }
 
-        async function refreshCloudDataForAuthentication() {
+        async function refreshCloudDataUntilAvailable() {
             let refreshed = await loadCloudData(true);
             for (let attempt = 0; !refreshed && cloudDataLoading && attempt < 20; attempt++) {
                 await new Promise(resolve => window.setTimeout(resolve, 250));
@@ -1402,7 +1413,7 @@
             const nip = document.getElementById('login-nip').value.trim();
             const pass = document.getElementById('login-password').value.trim();
 
-            const cloudAvailable = await refreshCloudDataForAuthentication();
+            const cloudAvailable = await refreshCloudDataUntilAvailable();
             const localUsers = getLocalUsers();
             const foundUser = localUsers.find(user =>
                 String(user.nip || user.NIP || '').trim() === nip &&
@@ -1436,7 +1447,7 @@
                 unit_kerja: document.getElementById('reg-unit').value
             };
 
-            await refreshCloudDataForAuthentication();
+            await refreshCloudDataUntilAvailable();
             let localUsers = getLocalUsers();
             if (localUsers.some(user => String(user.nip || user.NIP || '').trim() === payload.nip)) {
                 showToast('NIP tersebut sudah terdaftar!', 'error');
@@ -1455,7 +1466,7 @@
             let registrationConfirmed = false;
             for (let attempt = 0; attempt < 10; attempt++) {
                 await new Promise(resolve => window.setTimeout(resolve, 750));
-                if (await refreshCloudDataForAuthentication() && getLocalUsers().some(user =>
+                if (await refreshCloudDataUntilAvailable() && getLocalUsers().some(user =>
                     String(user.nip || user.NIP || '').trim() === payload.nip &&
                     String(user.password || user.Password || '').trim() === payload.password
                 )) {
@@ -1685,10 +1696,31 @@
         }
 
         function openUploadModal() { document.getElementById('modal-upload').classList.remove('hidden'); }
-        function closeUploadModal() { document.getElementById('modal-upload').classList.add('hidden'); }
+        function closeUploadModal() {
+            if (certificateUploadInProgress) return;
+            document.getElementById('modal-upload').classList.add('hidden');
+        }
+
+        function updateUploadProgress(message, detail, progress) {
+            document.getElementById('upload-progress').classList.remove('hidden');
+            document.getElementById('upload-progress-message').textContent = message;
+            document.getElementById('upload-progress-detail').textContent = detail;
+            document.getElementById('upload-progress-bar').style.width = `${progress}%`;
+        }
+
+        function setCertificateUploadBusy(isBusy) {
+            certificateUploadInProgress = isBusy;
+            document.getElementById('upload-submit-button').disabled = isBusy;
+            document.getElementById('upload-submit-button').classList.toggle('opacity-60', isBusy);
+            document.getElementById('upload-submit-button').classList.toggle('cursor-not-allowed', isBusy);
+            document.querySelectorAll('#modal-upload input, #modal-upload select, #modal-upload button').forEach(element => {
+                if (element.id !== 'upload-submit-button') element.disabled = isBusy;
+            });
+        }
 
         async function handleUploadSubmit(e) {
             e.preventDefault();
+            if (certificateUploadInProgress) return;
             const fileInput = document.getElementById('upload-file');
             const file = fileInput.files[0];
             if (!file) {
@@ -1712,9 +1744,16 @@
             }
 
             const reader = new FileReader();
-            reader.onload = async function() {
-                const base64Data = reader.result;
-                const payload = {
+            setCertificateUploadBusy(true);
+            updateUploadProgress('Membaca berkas...', 'Berkas sedang disiapkan untuk dikirim.', 15);
+            let payload = null;
+            try {
+                const base64Data = await new Promise((resolve, reject) => {
+                    reader.onload = () => resolve(reader.result);
+                    reader.onerror = () => reject(new Error('Berkas tidak dapat dibaca. Silakan pilih ulang.'));
+                    reader.readAsDataURL(file);
+                });
+                payload = {
                     type: 'upload_sertifikat',
                     id: 'cert_' + Date.now(),
                     nip: currentUser.nip,
@@ -1733,6 +1772,7 @@
                     status: 'Pending'
                 };
 
+                updateUploadProgress('Mengirim berkas ke Google Drive...', 'Mohon tunggu. Berkas akan disimpan ke folder sesuai kategori.', 45);
                 let localCerts = JSON.parse(localStorage.getItem('uin_local_certs') || '[]');
                 const localCertificate = { ...payload, file_data: undefined, file_url: '' };
                 delete localCertificate.file_data;
@@ -1741,28 +1781,57 @@
 
                 const sent = await sendCloudMutation(payload);
                 if (!sent) {
-                    localCerts = localCerts.filter(cert => cert.id !== payload.id);
-                    localStorage.setItem('uin_local_certs', JSON.stringify(localCerts));
-                    loadUserCertificates();
-                    fetchSystemStats();
+                    removeLocalCertificate(payload.id);
                     return;
                 }
-                await new Promise(resolve => window.setTimeout(resolve, 1000));
-                const refreshed = await loadCloudData(true);
-                const savedCertificate = JSON.parse(localStorage.getItem('uin_local_certs') || '[]')
-                    .find(cert => cert.id === payload.id);
-                if (!refreshed || !savedCertificate || !savedCertificate.file_url ||
+
+                updateUploadProgress('Memverifikasi penyimpanan...', 'Memastikan file dan URL-nya sudah tercatat di spreadsheet.', 75);
+                let savedCertificate = null;
+                for (let attempt = 0; attempt < 10; attempt++) {
+                    await new Promise(resolve => window.setTimeout(resolve, 800));
+                    const refreshed = await refreshCloudDataUntilAvailable();
+                    if (refreshed) {
+                        savedCertificate = JSON.parse(localStorage.getItem('uin_local_certs') || '[]')
+                            .find(cert => cert.id === payload.id);
+                        if (savedCertificate && savedCertificate.file_url &&
+                            savedCertificate.file_url.indexOf('drive.google.com') !== -1) break;
+                    }
+                    savedCertificate = null;
+                }
+                if (!savedCertificate || !savedCertificate.file_url ||
                     savedCertificate.file_url.indexOf('drive.google.com') === -1) {
-                    showToast('Unggah belum terverifikasi. Pastikan Apps Script terbaru sudah di-deploy dan izin Drive tersedia.', 'error');
+                    removeLocalCertificate(payload.id);
+                    showToast('Berkas belum terverifikasi tersimpan. Periksa koneksi, izin Drive, dan deployment Apps Script sebelum mencoba kembali.', 'error');
                     return;
                 }
+
+                updateUploadProgress('Unggah berhasil!', 'Berkas tersimpan di Google Drive dan tercatat pada spreadsheet.', 100);
+                document.getElementById('upload-progress-icon').className = 'fa-solid fa-circle-check text-uin-primary';
+                await new Promise(resolve => window.setTimeout(resolve, 350));
+                document.getElementById('modal-upload').querySelector('form').reset();
+                setCertificateUploadBusy(false);
                 closeUploadModal();
                 loadUserCertificates();
                 fetchSystemStats();
-                showToast('Berkas berhasil disimpan ke Google Drive dan URL-nya tercatat di spreadsheet!');
-            };
-            reader.onerror = () => showToast('Berkas tidak dapat dibaca. Silakan pilih ulang.', 'error');
-            reader.readAsDataURL(file);
+                showAuthSuccessPopup('Unggah Berhasil', `Sertifikat "${payload.judul}" berhasil disimpan ke Google Drive dan tercatat di spreadsheet.`);
+            } catch (error) {
+                console.error('Gagal mengunggah sertifikat:', error);
+                if (payload) removeLocalCertificate(payload.id);
+                showToast(error.message || 'Berkas gagal diunggah. Silakan coba kembali.', 'error');
+            } finally {
+                setCertificateUploadBusy(false);
+                document.getElementById('upload-progress').classList.add('hidden');
+                document.getElementById('upload-progress-icon').className = 'fa-solid fa-spinner fa-spin text-uin-primary';
+                document.getElementById('upload-progress-bar').style.width = '0%';
+            }
+        }
+
+        function removeLocalCertificate(identifier) {
+            const localCerts = JSON.parse(localStorage.getItem('uin_local_certs') || '[]')
+                .filter(cert => cert.id !== identifier);
+            localStorage.setItem('uin_local_certs', JSON.stringify(localCerts));
+            loadUserCertificates();
+            fetchSystemStats();
         }
 
         async function deleteCertificate(identifier) {

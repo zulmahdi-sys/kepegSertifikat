@@ -118,12 +118,7 @@ function doPost(e) {
     var ss = SpreadsheetApp.openById(SPREADSHEET_ID);
     
     if (data.type === 'register_pegawai') {
-      var sheet = ss.getSheetByName('Pegawai') || ss.insertSheet('Pegawai');
-      if (sheet.getLastRow() === 0) {
-        sheet.appendRow(['NIP', 'Nama', 'WhatsApp', 'Email', 'Jabatan', 'Unit Kerja', 'Created At', 'Role', 'Password']);
-      }
-      // Password disimpan di Kolom I (index 9)
-      sheet.appendRow([data.nip, data.nama, data.whatsapp, data.email, data.jabatan, data.unit_kerja, new Date(), data.role || 'user', data.password]);
+      saveRegisteredEmployee(ss, data);
     } 
     else if (data.type === 'save_pegawai') {
       var sheet = ss.getSheetByName('Pegawai') || ss.insertSheet('Pegawai');
@@ -416,6 +411,51 @@ function saveCertificateFile(data) {
   var fileName = String(data.file_name || 'sertifikat').replace(/[\\\/:*?"<>|]/g, '_').substring(0, 150);
   var blob = Utilities.newBlob(bytes, mimeType, fileName);
   return DriveApp.getFolderById(folderId).createFile(blob);
+}
+
+function saveRegisteredEmployee(ss, data) {
+  var nip = String(data.nip || '').trim();
+  var password = String(data.password || '').trim();
+  if (!nip || !password) {
+    throw new Error('NIP dan kata sandi wajib diisi.');
+  }
+
+  var sheet = ss.getSheetByName('Pegawai') || ss.insertSheet('Pegawai');
+  if (sheet.getLastRow() === 0) {
+    sheet.appendRow(['NIP', 'Nama', 'WhatsApp', 'Email', 'Jabatan', 'Unit Kerja', 'Created At', 'Role', 'Password']);
+  }
+  ensureHeaderColumn(sheet, 'Password');
+  var lastColumn = sheet.getLastColumn();
+  var headers = sheet.getRange(1, 1, 1, lastColumn).getValues()[0];
+  var nipColumn = headers.indexOf('NIP');
+  if (nipColumn < 0) throw new Error('Kolom NIP tidak ditemukan pada sheet Pegawai.');
+
+  var lastRow = sheet.getLastRow();
+  if (lastRow > 1) {
+    var nipValues = sheet.getRange(2, nipColumn + 1, lastRow - 1, 1).getDisplayValues();
+    for (var index = 0; index < nipValues.length; index++) {
+      if (String(nipValues[index][0]).trim() === nip) {
+        throw new Error('NIP tersebut sudah terdaftar.');
+      }
+    }
+  }
+
+  var employee = {
+    'NIP': nip,
+    'Nama': data.nama || '',
+    'WhatsApp': data.whatsapp || '',
+    'Email': data.email || '',
+    'Jabatan': data.jabatan || '',
+    'Unit Kerja': data.unit_kerja || '',
+    'Created At': new Date(),
+    'Role': data.role || 'user',
+    'Password': password
+  };
+  var targetRow = lastRow + 1;
+  sheet.getRange(targetRow, nipColumn + 1).setNumberFormat('@');
+  sheet.appendRow(headers.map(function(header) {
+    return employee[header] === undefined ? '' : employee[header];
+  }));
 }
 
 function trashDriveFile(fileId) {

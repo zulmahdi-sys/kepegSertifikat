@@ -845,6 +845,17 @@
         </div>
     </div>
 
+    <div id="modal-auth-success" class="fixed inset-0 z-[80] bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4 hidden" role="dialog" aria-modal="true" aria-labelledby="auth-success-title" aria-describedby="auth-success-message">
+        <div class="glass-modal w-full max-w-sm p-7 rounded-3xl text-center space-y-4">
+            <div class="w-14 h-14 rounded-2xl bg-emerald-100 text-emerald-700 flex items-center justify-center text-2xl mx-auto">
+                <i class="fa-solid fa-circle-check" aria-hidden="true"></i>
+            </div>
+            <h2 id="auth-success-title" class="text-xl font-extrabold text-uin-primary">Berhasil</h2>
+            <p id="auth-success-message" class="text-sm text-slate-600"></p>
+            <button type="button" onclick="closeAuthSuccessPopup()" class="w-full px-4 py-3 bg-uin-primary hover:bg-uin-secondary text-white font-bold rounded-xl transition-all">Lanjutkan</button>
+        </div>
+    </div>
+
     <!-- Unit Kerja Add Modal -->
     <div id="modal-unit" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 hidden">
         <div class="glass-modal w-full max-w-md p-6 md:p-8 rounded-3xl space-y-6 relative">
@@ -933,6 +944,17 @@
                 toast.classList.add('translate-y-2', 'opacity-0');
                 setTimeout(() => toast.remove(), 300);
             }, 3500);
+        }
+
+        function showAuthSuccessPopup(title, message) {
+            document.getElementById('auth-success-title').textContent = title;
+            document.getElementById('auth-success-message').textContent = message;
+            document.getElementById('modal-auth-success').classList.remove('hidden');
+            document.getElementById('modal-auth-success').querySelector('button').focus();
+        }
+
+        function closeAuthSuccessPopup() {
+            document.getElementById('modal-auth-success').classList.add('hidden');
         }
 
         // Initialize on load
@@ -1362,24 +1384,39 @@
             return defaults;
         }
 
+        async function refreshCloudDataForAuthentication() {
+            let refreshed = await loadCloudData(true);
+            for (let attempt = 0; !refreshed && cloudDataLoading && attempt < 20; attempt++) {
+                await new Promise(resolve => window.setTimeout(resolve, 250));
+            }
+            if (!refreshed && !cloudDataLoading) refreshed = await loadCloudData(true);
+            return refreshed;
+        }
+
         async function handleLogin(e) {
             e.preventDefault();
             const nip = document.getElementById('login-nip').value.trim();
             const pass = document.getElementById('login-password').value.trim();
 
+            const cloudAvailable = await refreshCloudDataForAuthentication();
             const localUsers = getLocalUsers();
-            const foundUser = localUsers.find(u => u.nip === nip && (u.password === pass || u.Password === pass));
+            const foundUser = localUsers.find(user =>
+                String(user.nip || user.NIP || '').trim() === nip &&
+                String(user.password || user.Password || '').trim() === pass
+            );
 
             if (!foundUser) {
-                showToast('NIP atau Kata Sandi salah!', 'error');
+                showToast(cloudAvailable
+                    ? 'NIP atau Kata Sandi tidak cocok dengan data akun. Periksa kembali atau hubungi administrator.'
+                    : 'Data akun belum dapat disinkronkan. Periksa koneksi internet lalu coba lagi.', 'error');
                 return;
             }
 
-            currentUser = foundUser;
+            currentUser = normalizeSheetUser(foundUser);
             currentUser.role = 'user';
             localStorage.setItem('uin_current_user', JSON.stringify(currentUser));
             showUserDashboard();
-            showToast('Berhasil masuk ke Dashboard!');
+            showAuthSuccessPopup('Login Berhasil', `Selamat datang, ${currentUser.nama || 'Pengguna'}. Anda akan diarahkan ke dashboard.`);
         }
 
         async function handleRegister(e) {
@@ -1395,19 +1432,44 @@
                 unit_kerja: document.getElementById('reg-unit').value
             };
 
+            if (!await refreshCloudDataForAuthentication()) {
+                showToast('Data akun belum dapat diperiksa. Pastikan koneksi internet aktif lalu coba daftar kembali.', 'error');
+                return;
+            }
             let localUsers = getLocalUsers();
-            if (localUsers.some(u => u.nip === payload.nip)) {
+            if (localUsers.some(user => String(user.nip || user.NIP || '').trim() === payload.nip)) {
                 showToast('NIP tersebut sudah terdaftar!', 'error');
                 return;
             }
+            const previousUsers = [...localUsers];
             localUsers.push(payload);
             localStorage.setItem('uin_local_users', JSON.stringify(localUsers));
 
-            if (!await sendCloudMutation(payload)) return;
+            if (!await sendCloudMutation(payload)) {
+                localStorage.setItem('uin_local_users', JSON.stringify(previousUsers));
+                return;
+            }
 
-            showToast('Pendaftaran berhasil! Silakan masuk.');
+            let registrationConfirmed = false;
+            for (let attempt = 0; attempt < 6; attempt++) {
+                await new Promise(resolve => window.setTimeout(resolve, 750));
+                if (await refreshCloudDataForAuthentication() && getLocalUsers().some(user =>
+                    String(user.nip || user.NIP || '').trim() === payload.nip &&
+                    String(user.password || user.Password || '').trim() === payload.password
+                )) {
+                    registrationConfirmed = true;
+                    break;
+                }
+            }
+            if (!registrationConfirmed) {
+                localStorage.setItem('uin_local_users', JSON.stringify(previousUsers));
+                showToast('Pendaftaran belum tersimpan di spreadsheet. Periksa izin/deployment Apps Script dan coba lagi.', 'error');
+                return;
+            }
+
             switchAuthTab('login');
             document.getElementById('form-register').reset();
+            showAuthSuccessPopup('Akun Berhasil Dibuat', 'Pendaftaran Anda sudah tersimpan. Silakan masuk menggunakan NIP dan kata sandi yang baru dibuat.');
         }
 
         // Admin Login Modal (Cleared inputs, no auto-fill)

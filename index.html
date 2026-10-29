@@ -261,9 +261,9 @@
                 <div class="grid grid-cols-1 lg:grid-cols-5 gap-6 items-start">
                     <!-- Auth Section (Login / Daftar) -->
                     <div id="auth-section" class="glass-card p-6 md:p-10 rounded-3xl shadow-xl lg:col-span-3">
-                    <div class="flex border-b border-slate-200 mb-6">
-                        <button onclick="switchAuthTab('login')" id="tab-login-btn" class="flex-1 pb-3 text-sm font-bold text-uin-primary border-b-2 border-uin-primary transition-all">Masuk Akun</button>
-                        <button onclick="switchAuthTab('register')" id="tab-register-btn" class="flex-1 pb-3 text-sm font-bold text-slate-400 hover:text-slate-600 transition-all">Daftar Akun Baru</button>
+                    <div class="flex gap-2 p-1 bg-slate-100 rounded-xl mb-6">
+                        <button onclick="switchAuthTab('login')" id="tab-login-btn" aria-pressed="true" class="flex-1 px-3 py-3 text-sm font-extrabold text-black bg-amber-400 hover:bg-amber-300 rounded-lg shadow-sm transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-600">Masuk Akun</button>
+                        <button onclick="switchAuthTab('register')" id="tab-register-btn" aria-pressed="false" class="flex-1 px-3 py-3 text-sm font-bold text-black bg-amber-200 hover:bg-amber-300 rounded-lg transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-600">Daftar Akun Baru</button>
                     </div>
 
                     <!-- Form Login -->
@@ -1347,13 +1347,17 @@
             if (tab === 'login') {
                 document.getElementById('form-login').classList.remove('hidden');
                 document.getElementById('form-register').classList.add('hidden');
-                document.getElementById('tab-login-btn').className = 'flex-1 pb-3 text-sm font-bold text-uin-primary border-b-2 border-uin-primary transition-all';
-                document.getElementById('tab-register-btn').className = 'flex-1 pb-3 text-sm font-bold text-slate-400 hover:text-slate-600 transition-all';
+                document.getElementById('tab-login-btn').className = 'flex-1 px-3 py-3 text-sm font-extrabold text-black bg-amber-400 hover:bg-amber-300 rounded-lg shadow-sm transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-600';
+                document.getElementById('tab-login-btn').setAttribute('aria-pressed', 'true');
+                document.getElementById('tab-register-btn').className = 'flex-1 px-3 py-3 text-sm font-bold text-black bg-amber-200 hover:bg-amber-300 rounded-lg transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-600';
+                document.getElementById('tab-register-btn').setAttribute('aria-pressed', 'false');
             } else {
                 document.getElementById('form-login').classList.add('hidden');
                 document.getElementById('form-register').classList.remove('hidden');
-                document.getElementById('tab-register-btn').className = 'flex-1 pb-3 text-sm font-bold text-uin-primary border-b-2 border-uin-primary transition-all';
-                document.getElementById('tab-login-btn').className = 'flex-1 pb-3 text-sm font-bold text-slate-400 hover:text-slate-600 transition-all';
+                document.getElementById('tab-register-btn').className = 'flex-1 px-3 py-3 text-sm font-extrabold text-black bg-amber-400 hover:bg-amber-300 rounded-lg shadow-sm transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-600';
+                document.getElementById('tab-register-btn').setAttribute('aria-pressed', 'true');
+                document.getElementById('tab-login-btn').className = 'flex-1 px-3 py-3 text-sm font-bold text-black bg-amber-200 hover:bg-amber-300 rounded-lg transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-600';
+                document.getElementById('tab-login-btn').setAttribute('aria-pressed', 'false');
             }
         }
 
@@ -1432,26 +1436,24 @@
                 unit_kerja: document.getElementById('reg-unit').value
             };
 
-            if (!await refreshCloudDataForAuthentication()) {
-                showToast('Data akun belum dapat diperiksa. Pastikan koneksi internet aktif lalu coba daftar kembali.', 'error');
-                return;
-            }
+            await refreshCloudDataForAuthentication();
             let localUsers = getLocalUsers();
             if (localUsers.some(user => String(user.nip || user.NIP || '').trim() === payload.nip)) {
                 showToast('NIP tersebut sudah terdaftar!', 'error');
                 return;
             }
-            const previousUsers = [...localUsers];
             localUsers.push(payload);
             localStorage.setItem('uin_local_users', JSON.stringify(localUsers));
 
             if (!await sendCloudMutation(payload)) {
-                localStorage.setItem('uin_local_users', JSON.stringify(previousUsers));
+                localStorage.setItem('uin_local_users', JSON.stringify(
+                    getLocalUsers().filter(user => String(user.nip || user.NIP || '').trim() !== payload.nip)
+                ));
                 return;
             }
 
             let registrationConfirmed = false;
-            for (let attempt = 0; attempt < 6; attempt++) {
+            for (let attempt = 0; attempt < 10; attempt++) {
                 await new Promise(resolve => window.setTimeout(resolve, 750));
                 if (await refreshCloudDataForAuthentication() && getLocalUsers().some(user =>
                     String(user.nip || user.NIP || '').trim() === payload.nip &&
@@ -1462,8 +1464,10 @@
                 }
             }
             if (!registrationConfirmed) {
-                localStorage.setItem('uin_local_users', JSON.stringify(previousUsers));
-                showToast('Pendaftaran belum tersimpan di spreadsheet. Periksa izin/deployment Apps Script dan coba lagi.', 'error');
+                localStorage.setItem('uin_local_users', JSON.stringify(
+                    getLocalUsers().filter(user => String(user.nip || user.NIP || '').trim() !== payload.nip)
+                ));
+                showToast('Pendaftaran belum terkonfirmasi di spreadsheet. Periksa koneksi dan deployment Apps Script, lalu coba lagi.', 'error');
                 return;
             }
 

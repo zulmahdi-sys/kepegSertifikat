@@ -184,6 +184,9 @@
                 </div>
             </div>
             <div id="nav-actions" class="flex items-center space-x-3">
+                <a href="https://script.google.com/a/macros/ar-raniry.ac.id/s/AKfycbwOEvCwQXpWGmiJZLSkBC3ldNsAmty5EkGXakXH-4OkDb7RyIL9nGRVmRI_nCreZY1llw/exec" target="_blank" rel="noopener noreferrer" class="px-3 md:px-4 py-2 text-[10px] md:text-xs font-bold uppercase tracking-wider text-white bg-uin-secondary hover:bg-uin-primary border border-uin-primary/30 rounded-xl transition-all shadow-sm whitespace-nowrap">
+                    <i class="fa-solid fa-arrow-up-right-from-square mr-1.5"></i> Layanan Pengusulan Jabatan Akademik Dosen
+                </a>
                 <button onclick="openAdminLoginModal()" class="px-3 md:px-4 py-2 text-[10px] md:text-xs font-bold uppercase tracking-wider text-uin-primary bg-white/80 hover:bg-uin-primary hover:text-white border border-uin-primary/30 rounded-xl transition-all shadow-sm">
                     <i class="fa-solid fa-shield-halved mr-1.5"></i> Login Admin
                 </button>
@@ -491,6 +494,12 @@
                 <!-- Tab Content 1: Monitoring & Verifikasi -->
                 <div id="adm-content-monitoring" class="space-y-4">
                     <div class="glass-card p-6 rounded-3xl space-y-4">
+                        <div id="admin-upload-notifications" class="rounded-2xl border border-emerald-200 bg-emerald-50/80 p-4">
+                            <h3 class="font-bold text-emerald-900"><i class="fa-solid fa-bell mr-2 text-amber-500"></i>Notifikasi Pengiriman Terbaru</h3>
+                            <div id="admin-upload-notifications-list" class="mt-3 space-y-2">
+                                <p class="text-xs text-slate-500">Belum ada sertifikat yang diunggah.</p>
+                            </div>
+                        </div>
                         <div class="flex flex-col md:flex-row justify-between items-center gap-4">
                             <h3 class="font-bold text-slate-800 text-lg">Daftar Pengumpulan Berkas Peserta</h3>
                             <div class="relative w-full md:w-72">
@@ -972,6 +981,7 @@
         let selectedParticipantForDetail = null;
         let cloudDataLoading = false;
         let cloudDataInitialized = false;
+        let knownCertificateIds = null;
         let runningTextBackendAvailable = false;
         let certificateUploadInProgress = false;
 
@@ -1042,7 +1052,17 @@
                     if (usersChanged) localStorage.setItem('uin_local_users', users);
                 }
                 if (Array.isArray(result.sertifikat)) {
-                    const certificates = JSON.stringify(result.sertifikat.map(normalizeSheetCertificate));
+                    const normalizedCertificates = result.sertifikat.map(normalizeSheetCertificate);
+                    const incomingIds = new Set(normalizedCertificates.map(certificate => certificate.id).filter(Boolean));
+                    if (knownCertificateIds !== null && currentUser && currentUser.role === 'admin') {
+                        const newUploads = normalizedCertificates.filter(certificate =>
+                            certificate.id && !knownCertificateIds.has(certificate.id));
+                        newUploads.forEach(certificate => {
+                            showToast(`Berkas baru diterima dari ${escapeHtml(certificate.nama || certificate.nip)}.`);
+                        });
+                    }
+                    knownCertificateIds = incomingIds;
+                    const certificates = JSON.stringify(normalizedCertificates);
                     certificatesChanged = localStorage.getItem('uin_local_certs') !== certificates;
                     if (certificatesChanged) localStorage.setItem('uin_local_certs', certificates);
                 }
@@ -1086,7 +1106,10 @@
                 }
                 if (usersChanged || certificatesChanged || unitsChanged || shouldRenderInitialData) fetchSystemStats();
                 if (currentUser && currentUser.role === 'admin') {
-                    if (usersChanged || certificatesChanged || shouldRenderInitialData) loadAdminMonitoring();
+                    if (usersChanged || certificatesChanged || shouldRenderInitialData) {
+                        loadAdminMonitoring();
+                        loadAdminUploadNotifications();
+                    }
                     if (usersChanged || shouldRenderInitialData) loadAdminMasterDB();
                     if (unitsChanged || shouldRenderInitialData) loadAdminUnitsTable();
                     if (announcementsChanged || shouldRenderInitialData) loadAdminAnnouncements();
@@ -1594,6 +1617,7 @@
             document.getElementById('view-user-dashboard').classList.add('hidden');
             document.getElementById('view-admin-dashboard').classList.remove('hidden');
             loadAdminMonitoring();
+            loadAdminUploadNotifications();
             loadAdminMasterDB();
             loadAdminUnitsTable();
             loadAdminAnnouncements();
@@ -1705,6 +1729,36 @@
             renderCertList(arsipContainer, approved);
         }
 
+        function getCertificateStatusLabel(status) {
+            if (status === 'Disetujui') return 'Diterima';
+            return status || 'Menunggu';
+        }
+
+        function loadAdminUploadNotifications() {
+            const container = document.getElementById('admin-upload-notifications-list');
+            if (!container) return;
+            const certificates = JSON.parse(localStorage.getItem('uin_local_certs') || '[]')
+                .slice()
+                .sort((a, b) => new Date(b.uploaded_at || b['Uploaded At'] || 0) - new Date(a.uploaded_at || a['Uploaded At'] || 0))
+                .slice(0, 5);
+            if (certificates.length === 0) {
+                container.innerHTML = '<p class="text-xs text-slate-500">Belum ada sertifikat yang diunggah.</p>';
+                return;
+            }
+            container.innerHTML = certificates.map(certificate => {
+                const uploadedAt = new Date(certificate.uploaded_at || certificate['Uploaded At'] || '');
+                const dateLabel = Number.isNaN(uploadedAt.getTime()) ? '' : uploadedAt.toLocaleString('id-ID');
+                return `
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 rounded-xl bg-white/80 px-3 py-2 text-xs">
+                        <div>
+                            <p class="font-bold text-slate-800">${escapeHtml(certificate.nama || certificate.nip)} mengirim "${escapeHtml(certificate.judul)}"</p>
+                            <p class="text-slate-500">${escapeHtml(certificate.kategori)}${dateLabel ? ` • ${escapeHtml(dateLabel)}` : ''} • Status: <strong class="text-emerald-700">${escapeHtml(getCertificateStatusLabel(certificate.status))}</strong></p>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
         function loadUserNotification() {
             const notifs = JSON.parse(localStorage.getItem('uin_local_notifs') || '{}');
             const container = document.getElementById('user-notification-container');
@@ -1743,9 +1797,9 @@
             container.innerHTML = items.map(item => `
                 <div class="p-3 rounded-xl bg-white/80 border border-slate-200/60 flex items-center justify-between text-xs">
                     <div>
-                        <p class="font-bold text-slate-800 line-clamp-1">${item.judul}</p>
+                        <p class="font-bold text-slate-800 line-clamp-1">${escapeHtml(item.judul)}</p>
                         <p class="text-[10px] text-slate-500">${escapeHtml(item.instansi || '-')} • ${escapeHtml(item.peran || '-')}</p>
-                        <p class="text-[10px] text-slate-500">${item.tingkat} • ${item.tahun} (${item.status || 'Pending'})</p>
+                        <p class="text-[10px] text-slate-500">${escapeHtml(item.tingkat)} • ${escapeHtml(item.tahun)} (${escapeHtml(getCertificateStatusLabel(item.status))})</p>
                     </div>
                     <div class="flex items-center space-x-1.5">
                         <a href="${item.file_url}" target="_blank" class="w-7 h-7 rounded-lg bg-emerald-100 text-uin-primary flex items-center justify-center hover:bg-emerald-200"><i class="fa-solid fa-eye"></i></a>
@@ -1829,10 +1883,10 @@
                     file_data: base64Data,
                     file_name: file ? file.name : 'sertifikat.pdf',
                     mime_type: file.type,
-                    status: 'Pending'
+                    status: 'Disetujui'
                 };
 
-                updateUploadProgress('Mengirim berkas ke Google Drive...', 'Mohon tunggu. Berkas akan disimpan ke folder sesuai kategori.', 45);
+                updateUploadProgress('Mengirim berkas ke Google Drive...', 'Berkas akan disimpan dan otomatis diterima setelah tersimpan.', 45);
                 let localCerts = JSON.parse(localStorage.getItem('uin_local_certs') || '[]');
                 const localCertificate = { ...payload, file_data: undefined, file_url: '' };
                 delete localCertificate.file_data;
@@ -1865,7 +1919,7 @@
                     return;
                 }
 
-                updateUploadProgress('Unggah berhasil!', 'Berkas tersimpan di Google Drive dan tercatat pada spreadsheet.', 100);
+                updateUploadProgress('Unggah berhasil!', 'Berkas tersimpan dan status pengiriman telah diterima.', 100);
                 document.getElementById('upload-progress-icon').className = 'fa-solid fa-circle-check text-uin-primary';
                 await new Promise(resolve => window.setTimeout(resolve, 350));
                 document.getElementById('modal-upload').querySelector('form').reset();
@@ -1873,7 +1927,7 @@
                 closeUploadModal();
                 loadUserCertificates();
                 fetchSystemStats();
-                showAuthSuccessPopup('Unggah Berhasil', `Sertifikat "${payload.judul}" berhasil disimpan ke Google Drive dan tercatat di spreadsheet.`);
+                showAuthSuccessPopup('Unggah Berhasil & Diterima', `Sertifikat "${payload.judul}" berhasil disimpan. Status pengiriman: Diterima.`);
             } catch (error) {
                 console.error('Gagal mengunggah sertifikat:', error);
                 if (payload) removeLocalCertificate(payload.id);
@@ -1971,11 +2025,11 @@
                         <div>
                             <p class="font-bold text-slate-900">${c.judul}</p>
                             <p class="text-[10px] text-slate-600">Penerbit: ${escapeHtml(c.instansi || '-')} • Peran: ${escapeHtml(c.peran || '-')}</p>
-                            <p class="text-[10px] text-slate-500">${escapeHtml(normalizeCertificateCategory(c.kategori))} • ${c.tingkat} • ${c.tahun} | Status: <strong class="text-emerald-700">${c.status || 'Pending'}</strong></p>
+                            <p class="text-[10px] text-slate-500">${escapeHtml(normalizeCertificateCategory(c.kategori))} • ${escapeHtml(c.tingkat)} • ${escapeHtml(c.tahun)} | Status: <strong class="text-emerald-700">${escapeHtml(getCertificateStatusLabel(c.status))}</strong></p>
                         </div>
                         <div class="flex items-center space-x-2">
                             <a href="${c.file_url}" target="_blank" class="px-2.5 py-1.5 bg-emerald-100 text-uin-primary font-bold rounded-lg"><i class="fa-solid fa-eye"></i></a>
-                            <button onclick="updateCertStatus('${c.id || c.judul}', 'Disetujui')" class="px-2.5 py-1.5 bg-emerald-600 text-white font-bold rounded-lg">Setuju</button>
+                            ${c.status !== 'Disetujui' ? `<button onclick="updateCertStatus('${c.id || c.judul}', 'Disetujui')" class="px-2.5 py-1.5 bg-emerald-600 text-white font-bold rounded-lg">Setuju</button>` : ''}
                             <button onclick="updateCertStatus('${c.id || c.judul}', 'Ditolak')" class="px-2.5 py-1.5 bg-amber-500 text-white font-bold rounded-lg">Tolak</button>
                             <button onclick="deleteCertAdmin('${c.id || c.judul}')" class="px-2.5 py-1.5 bg-red-600 text-white font-bold rounded-lg"><i class="fa-solid fa-trash"></i></button>
                         </div>

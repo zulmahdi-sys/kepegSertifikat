@@ -183,7 +183,7 @@ function doPost(e) {
         'Peran pada Sertifikat': data.peran || '',
         'Tingkat': data.tingkat,
         'Tahun': data.tahun,
-        'Status': data.status || 'Pending',
+        'Status': 'Disetujui',
         'Uploaded At': new Date(),
         'File URL': uploadedFile.getUrl(),
         'Drive File ID': uploadedFile.getId()

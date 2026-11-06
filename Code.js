@@ -220,11 +220,11 @@ function doPost(e) {
       var found = false;
       for (var i = 1; i < rows.length; i++) {
         if (rows[i][0] == data.id) {
-          sheet.getRange(i + 1, 2).setValue(data.title);
-          sheet.getRange(i + 1, 3).setValue(data.content);
-          sheet.getRange(i + 1, 4).setValue(data.status);
-          sheet.getRange(i + 1, 5).setValue(data.file_url || '');
-          sheet.getRange(i + 1, 6).setValue(data.file_name || '');
+          if (data.title !== undefined) sheet.getRange(i + 1, 2).setValue(data.title);
+          if (data.content !== undefined) sheet.getRange(i + 1, 3).setValue(data.content);
+          if (data.status !== undefined) sheet.getRange(i + 1, 4).setValue(data.status);
+          if (data.file_url !== undefined) sheet.getRange(i + 1, 5).setValue(data.file_url);
+          if (data.file_name !== undefined) sheet.getRange(i + 1, 6).setValue(data.file_name);
           found = true;
           break;
         }

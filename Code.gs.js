@@ -4,6 +4,8 @@
 
 var SPREADSHEET_ID = '1JUs07WljgRkFgKj5Bq3lPq54QF4-c1R8BUo8Rp7ySpQ';
 var CERTIFICATE_FOLDER_IDS = {
+  'Keahlian': '1BOpc7urDl_mkUrILfKgfHaj_6wzkRx5L',
+  'Kegiatan/Workshop/Seminar dll': '1DBalN8Rjjh8ChfmxQWzyGhz8ByDBUTGb',
   'Sertifikat Keahlian': '1BOpc7urDl_mkUrILfKgfHaj_6wzkRx5L',
   'Sertifikat Kompetensi': '1DBalN8Rjjh8ChfmxQWzyGhz8ByDBUTGb'
 };
@@ -40,7 +42,7 @@ function doGet(e) {
     runningTextSheet.appendRow(['ID', 'Message', 'Status', 'Updated At']);
     runningTextSheet.appendRow([
       'running_text_initial',
-      'Selamat Datang di Portal Resmi Pengumpulan Sertifikat Dosen & Tendik UIN Ar-Raniry Banda Aceh Tahun 2026. Batas Akhir Unggah Berkas adalah 30 Oktober 2026 pukul 23:59 WIB. Pastikan seluruh dokumen berkas keahlian dan kompetensi telah divalidasi dengan benar.',
+      'Selamat Datang di Portal Resmi Pengumpulan Berkas Dosen & Tendik UIN Ar-Raniry Banda Aceh Tahun 2026. Batas Akhir Unggah Berkas adalah 30 Oktober 2026 pukul 23:59 WIB. Pastikan seluruh dokumen keahlian dan kegiatan, workshop, seminar, dan sejenisnya telah divalidasi dengan benar.',
       'published',
       new Date()
     ]);

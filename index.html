@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistem Pengumpulan Sertifikat UIN Ar-Raniry Banda Aceh</title>
+    <title>Sistem Pengumpulan Berkas UIN Ar-Raniry Banda Aceh</title>
     <!-- Tailwind CSS & FontAwesome -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -180,7 +180,7 @@
                 </div>
                 <div>
                     <h1 class="text-xs md:text-lg font-extrabold text-uin-primary tracking-tight">UIN AR-RANIRY BANDA ACEH</h1>
-                    <p class="text-[10px] md:text-xs font-medium text-slate-600">Sistem Pengumpulan Sertifikat Keahlian & Kompetensi</p>
+                    <p class="text-[10px] md:text-xs font-medium text-slate-600">Sistem Pengumpulan Berkas Keahlian & Kegiatan</p>
                 </div>
             </div>
             <div id="nav-actions" class="flex items-center space-x-3">
@@ -212,12 +212,45 @@
                     <h2 class="text-2xl md:text-5xl font-black tracking-tight mb-4">PENGUMPULAN SERTIFIKAT</h2>
                     <p class="text-emerald-100 max-w-2xl mx-auto text-xs md:text-base mb-8">UIN AR-RANIRY BANDA ACEH, KAMPUS ENERGI KEBANGSAAN, SINERGI MEMBANGUN NEGERI</p>
                     
-                    <!-- Countdown Timer -->
-                    <div class="inline-flex flex-col items-center gap-2 bg-white/10 backdrop-blur-md px-6 py-3 rounded-2xl border border-white/20 text-xs md:text-sm font-semibold mb-8 shadow-inner">
-                        <span id="schedule-range-text" class="text-emerald-100">Jadwal: Memuat...</span>
-                        <span class="inline-flex items-center gap-2"><i class="fa-regular fa-clock text-amber-400"></i>
-                            <strong id="countdown-text" class="text-amber-300">Memuat countdown...</strong>
-                        </span>
+                    <!-- Schedule and countdown -->
+                    <div class="max-w-3xl mx-auto mb-8 space-y-3">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-left">
+                            <div class="rounded-2xl border border-white/20 bg-white/10 backdrop-blur-md px-5 py-4 shadow-inner">
+                                <p class="text-[10px] md:text-xs font-bold uppercase tracking-widest text-emerald-200">
+                                    <i class="fa-regular fa-calendar-check mr-1.5"></i>Tanggal Mulai
+                                </p>
+                                <p id="schedule-start-date" class="mt-2 text-sm md:text-base font-extrabold text-white">Memuat...</p>
+                                <p id="schedule-start-time" class="mt-1 text-xs text-emerald-100">Pukul --.-- WIB</p>
+                            </div>
+                            <div class="rounded-2xl border border-white/20 bg-white/10 backdrop-blur-md px-5 py-4 shadow-inner">
+                                <p class="text-[10px] md:text-xs font-bold uppercase tracking-widest text-emerald-200">
+                                    <i class="fa-regular fa-calendar-xmark mr-1.5"></i>Tanggal Berakhir
+                                </p>
+                                <p id="schedule-end-date" class="mt-2 text-sm md:text-base font-extrabold text-white">Memuat...</p>
+                                <p id="schedule-end-time" class="mt-1 text-xs text-emerald-100">Pukul --.-- WIB</p>
+                            </div>
+                        </div>
+                        <div class="rounded-2xl border border-white/20 bg-white/10 backdrop-blur-md px-4 py-4 md:px-6 shadow-inner">
+                            <p id="countdown-text" class="mb-3 text-xs md:text-sm font-extrabold text-amber-300">Memuat countdown...</p>
+                            <div class="grid grid-cols-4 gap-2 md:gap-3 max-w-xl mx-auto" role="timer" aria-label="Hitung mundur pengumpulan">
+                                <div class="rounded-xl bg-emerald-950/50 px-2 py-2">
+                                    <strong id="countdown-days" class="block text-xl md:text-3xl font-black text-white tabular-nums">00</strong>
+                                    <span class="text-[9px] md:text-[10px] uppercase tracking-wider text-emerald-200">Hari</span>
+                                </div>
+                                <div class="rounded-xl bg-emerald-950/50 px-2 py-2">
+                                    <strong id="countdown-hours" class="block text-xl md:text-3xl font-black text-white tabular-nums">00</strong>
+                                    <span class="text-[9px] md:text-[10px] uppercase tracking-wider text-emerald-200">Jam</span>
+                                </div>
+                                <div class="rounded-xl bg-emerald-950/50 px-2 py-2">
+                                    <strong id="countdown-minutes" class="block text-xl md:text-3xl font-black text-white tabular-nums">00</strong>
+                                    <span class="text-[9px] md:text-[10px] uppercase tracking-wider text-emerald-200">Menit</span>
+                                </div>
+                                <div class="rounded-xl bg-emerald-950/50 px-2 py-2">
+                                    <strong id="countdown-seconds" class="block text-xl md:text-3xl font-black text-white tabular-nums">00</strong>
+                                    <span class="text-[9px] md:text-[10px] uppercase tracking-wider text-emerald-200">Detik</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     <div>
@@ -361,7 +394,7 @@
                     </div>
                     <div class="flex items-center space-x-3 w-full md:w-auto justify-end">
                         <button onclick="openUploadModal()" class="px-5 py-3 bg-uin-primary hover:bg-uin-secondary text-white font-bold rounded-2xl shadow-lg transition-all flex items-center text-xs md:text-sm">
-                            <i class="fa-solid fa-cloud-arrow-up mr-2"></i> Upload Sertifikat Baru
+                            <i class="fa-solid fa-cloud-arrow-up mr-2"></i> Unggah Berkas Baru
                         </button>
                         <button onclick="logout()" class="px-4 py-3 bg-red-100 hover:bg-red-200 text-red-700 font-bold rounded-2xl transition-all">
                             <i class="fa-solid fa-right-from-bracket"></i>
@@ -378,7 +411,7 @@
                         <div class="flex justify-between items-center">
                             <div class="flex items-center space-x-3">
                                 <div class="w-10 h-10 rounded-xl bg-emerald-100 text-uin-primary flex items-center justify-center font-bold"><i class="fa-solid fa-award"></i></div>
-                                <h4 class="font-bold text-slate-800 text-sm">Sertifikat Keahlian</h4>
+                                <h4 class="font-bold text-slate-800 text-sm">Keahlian</h4>
                             </div>
                             <span id="count-keahlian" class="px-3 py-1 bg-emerald-50 text-uin-primary text-xs font-extrabold rounded-full">0 File</span>
                         </div>
@@ -391,11 +424,11 @@
                         <div class="flex justify-between items-center">
                             <div class="flex items-center space-x-3">
                                 <div class="w-10 h-10 rounded-xl bg-teal-100 text-teal-800 flex items-center justify-center font-bold"><i class="fa-solid fa-book-open"></i></div>
-                                <h4 class="font-bold text-slate-800 text-sm">Sertifikat Kompetensi</h4>
+                                <h4 class="font-bold text-slate-800 text-sm">Kegiatan/Workshop/Seminar dll</h4>
                             </div>
-                            <span id="count-kompetensi" class="px-3 py-1 bg-teal-50 text-teal-800 text-xs font-extrabold rounded-full">0 File</span>
+                            <span id="count-kegiatan" class="px-3 py-1 bg-teal-50 text-teal-800 text-xs font-extrabold rounded-full">0 File</span>
                         </div>
-                        <div id="list-kompetensi" class="space-y-3 min-h-[140px]">
+                        <div id="list-kegiatan" class="space-y-3 min-h-[140px]">
                             <p class="text-xs text-slate-400 text-center py-8">Belum ada berkas diunggah.</p>
                         </div>
                     </div>
@@ -436,7 +469,7 @@
                             <i class="fa-brands fa-google-drive mr-1.5 text-amber-200 text-sm"></i> Folder Keahlian
                         </a>
                         <a href="https://drive.google.com/drive/folders/1DBalN8Rjjh8ChfmxQWzyGhz8ByDBUTGb?usp=drive_link" target="_blank" class="px-4 py-2.5 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-xl transition-all text-xs flex items-center shadow">
-                            <i class="fa-brands fa-google-drive mr-1.5 text-amber-200 text-sm"></i> Folder Kompetensi
+                            <i class="fa-brands fa-google-drive mr-1.5 text-amber-200 text-sm"></i> Folder Kegiatan/Workshop/Seminar
                         </a>
                         <button onclick="logout()" class="px-4 py-2.5 bg-red-100 hover:bg-red-200 text-red-700 font-bold rounded-xl transition-all text-xs flex items-center">
                             <i class="fa-solid fa-right-from-bracket mr-1.5"></i> Keluar Admin
@@ -667,7 +700,7 @@
                         </div>
                         <span class="font-extrabold text-white text-sm">UIN Ar-Raniry Banda Aceh</span>
                     </div>
-                    <p>Sistem Pengumpulan Sertifikat Keahlian & Kompetensi Dosen dan Tendik berbasis integrasi digital aman dan terpercaya.</p>
+                    <p>Sistem Pengumpulan Berkas Keahlian & Kegiatan Dosen dan Tendik berbasis integrasi digital aman dan terpercaya.</p>
                 </div>
                 <div>
                     <h4 class="font-bold text-white uppercase tracking-wider mb-3">Tautan Cepat</h4>
@@ -693,18 +726,18 @@
     <div id="modal-upload" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 hidden">
         <div class="glass-modal w-full max-w-lg p-6 md:p-8 rounded-3xl space-y-6 relative">
             <button onclick="closeUploadModal()" class="absolute right-6 top-6 w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-600"><i class="fa-solid fa-xmark"></i></button>
-            <h3 class="text-xl font-extrabold text-uin-primary"><i class="fa-solid fa-cloud-arrow-up mr-2"></i> Unggah Berkas Sertifikat</h3>
+            <h3 class="text-xl font-extrabold text-uin-primary"><i class="fa-solid fa-cloud-arrow-up mr-2"></i> Unggah Berkas Keahlian/Kegiatan</h3>
             
             <form onsubmit="handleUploadSubmit(event)" class="space-y-4">
                 <div>
-                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Kategori Sertifikat</label>
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Kategori Berkas</label>
                     <select id="upload-kategori" class="w-full px-4 py-3 rounded-xl bg-white/60 border border-slate-200 text-sm focus:ring-2 focus:ring-uin-primary">
-                        <option value="Sertifikat Keahlian">Sertifikat Keahlian</option>
-                        <option value="Sertifikat Kompetensi">Sertifikat Kompetensi</option>
+                        <option value="Keahlian">Keahlian</option>
+                        <option value="Kegiatan/Workshop/Seminar dll">Kegiatan/Workshop/Seminar dll</option>
                     </select>
                 </div>
                 <div>
-                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Judul / Nama Sertifikat</label>
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Judul / Nama Berkas</label>
                     <input type="text" id="upload-judul" required placeholder="Contoh: Sertifikasi Certified Data Professional" class="w-full px-4 py-3 rounded-xl bg-white/60 border border-slate-200 text-sm focus:ring-2 focus:ring-uin-primary">
                 </div>
                 <div>
@@ -1098,7 +1131,7 @@
                 nip: String(certificate.nip || certificate.NIP || ''),
                 nama: certificate.nama || certificate['Nama Pegawai'] || '',
                 unit_kerja: certificate.unit_kerja || certificate['Unit Kerja'] || '',
-                kategori: certificate.kategori || certificate.Kategori || '',
+                kategori: normalizeCertificateCategory(certificate.kategori || certificate.Kategori || ''),
                 judul: certificate.judul || certificate.Judul || '',
                 instansi: certificate.instansi || certificate['Instansi/Lembaga Penerbit'] || '',
                 peran: certificate.peran || certificate['Peran pada Sertifikat'] || '',
@@ -1108,6 +1141,12 @@
                 uploaded_at: certificate.uploaded_at || certificate['Uploaded At'] || '',
                 file_url: certificate.file_url || certificate['File URL'] || ''
             };
+        }
+
+        function normalizeCertificateCategory(category) {
+            if (category === 'Sertifikat Keahlian') return 'Keahlian';
+            if (category === 'Sertifikat Kompetensi') return 'Kegiatan/Workshop/Seminar dll';
+            return category || '';
         }
 
         function escapeHtml(value) {
@@ -1266,10 +1305,15 @@
         }
 
         function formatScheduleDate(timestamp) {
-            return new Date(timestamp).toLocaleString('id-ID', {
-                day: 'numeric', month: 'long', year: 'numeric',
-                hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Jakarta'
-            }) + ' WIB';
+            const date = new Date(timestamp);
+            return {
+                date: date.toLocaleDateString('id-ID', {
+                    day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Asia/Jakarta'
+                }),
+                time: date.toLocaleTimeString('id-ID', {
+                    hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Asia/Jakarta'
+                })
+            };
         }
 
         function toDateTimeLocalValue(timestamp) {
@@ -1281,9 +1325,17 @@
 
         function renderSchedule() {
             const schedule = getSchedule();
-            const range = document.getElementById('schedule-range-text');
-            if (range) {
-                range.textContent = `Mulai: ${schedule.start_at ? formatScheduleDate(schedule.start_at) : 'Segera'} • Berakhir: ${formatScheduleDate(schedule.end_at)}`;
+            const startDate = document.getElementById('schedule-start-date');
+            const startTime = document.getElementById('schedule-start-time');
+            const endDate = document.getElementById('schedule-end-date');
+            const endTime = document.getElementById('schedule-end-time');
+            if (startDate && startTime && endDate && endTime && schedule.end_at) {
+                const start = schedule.start_at ? formatScheduleDate(schedule.start_at) : null;
+                const end = formatScheduleDate(schedule.end_at);
+                startDate.textContent = start ? start.date : 'Segera';
+                startTime.textContent = start ? `Pukul ${start.time} WIB` : 'Jadwal mulai segera';
+                endDate.textContent = end.date;
+                endTime.textContent = `Pukul ${end.time} WIB`;
             }
             if (countdownInterval) clearInterval(countdownInterval);
             updateCountdown();
@@ -1295,20 +1347,28 @@
             const countdown = document.getElementById('countdown-text');
             if (!countdown || !schedule.end_at) return;
             const now = Date.now();
+            let remaining = 0;
             if (schedule.start_at && now < schedule.start_at) {
-                countdown.textContent = `Mulai dalam ${formatRemainingTime(schedule.start_at - now)}`;
+                countdown.textContent = 'Pengumpulan dimulai dalam';
+                remaining = schedule.start_at - now;
             } else if (now < schedule.end_at) {
-                countdown.textContent = `Tersisa ${formatRemainingTime(schedule.end_at - now)}`;
+                countdown.textContent = 'Waktu pengumpulan tersisa';
+                remaining = schedule.end_at - now;
             } else {
                 countdown.textContent = 'Pengumpulan Ditutup';
+                remaining = 0;
             }
-        }
-
-        function formatRemainingTime(milliseconds) {
-            const totalHours = Math.floor(milliseconds / (1000 * 60 * 60));
-            const days = Math.floor(totalHours / 24);
-            const hours = totalHours % 24;
-            return `${days} hari ${hours} jam`;
+            const totalSeconds = Math.max(0, Math.floor(remaining / 1000));
+            const values = {
+                days: Math.floor(totalSeconds / 86400),
+                hours: Math.floor((totalSeconds % 86400) / 3600),
+                minutes: Math.floor((totalSeconds % 3600) / 60),
+                seconds: totalSeconds % 60
+            };
+            Object.keys(values).forEach(unit => {
+                const element = document.getElementById(`countdown-${unit}`);
+                if (element) element.textContent = String(values[unit]).padStart(2, '0');
+            });
         }
 
         function initCountdown() {
@@ -1629,19 +1689,19 @@
             const userCerts = allCerts.filter(i => i.nip === currentUser.nip);
 
             const keahlianContainer = document.getElementById('list-keahlian');
-            const kompetensiContainer = document.getElementById('list-kompetensi');
+            const kegiatanContainer = document.getElementById('list-kegiatan');
             const arsipContainer = document.getElementById('list-arsip');
 
-            const keahlian = userCerts.filter(i => i.kategori === 'Sertifikat Keahlian');
-            const kompetensi = userCerts.filter(i => i.kategori === 'Sertifikat Kompetensi');
+            const keahlian = userCerts.filter(i => normalizeCertificateCategory(i.kategori) === 'Keahlian');
+            const kegiatan = userCerts.filter(i => normalizeCertificateCategory(i.kategori) === 'Kegiatan/Workshop/Seminar dll');
             const approved = userCerts.filter(i => i.status === 'Disetujui');
 
             document.getElementById('count-keahlian').innerText = `${keahlian.length} File`;
-            document.getElementById('count-kompetensi').innerText = `${kompetensi.length} File`;
+            document.getElementById('count-kegiatan').innerText = `${kegiatan.length} File`;
             document.getElementById('count-arsip').innerText = `${approved.length} Arsip`;
 
             renderCertList(keahlianContainer, keahlian);
-            renderCertList(kompetensiContainer, kompetensi);
+            renderCertList(kegiatanContainer, kegiatan);
             renderCertList(arsipContainer, approved);
         }
 
@@ -1911,7 +1971,7 @@
                         <div>
                             <p class="font-bold text-slate-900">${c.judul}</p>
                             <p class="text-[10px] text-slate-600">Penerbit: ${escapeHtml(c.instansi || '-')} • Peran: ${escapeHtml(c.peran || '-')}</p>
-                            <p class="text-[10px] text-slate-500">${c.kategori} • ${c.tingkat} • ${c.tahun} | Status: <strong class="text-emerald-700">${c.status || 'Pending'}</strong></p>
+                            <p class="text-[10px] text-slate-500">${escapeHtml(normalizeCertificateCategory(c.kategori))} • ${c.tingkat} • ${c.tahun} | Status: <strong class="text-emerald-700">${c.status || 'Pending'}</strong></p>
                         </div>
                         <div class="flex items-center space-x-2">
                             <a href="${c.file_url}" target="_blank" class="px-2.5 py-1.5 bg-emerald-100 text-uin-primary font-bold rounded-lg"><i class="fa-solid fa-eye"></i></a>

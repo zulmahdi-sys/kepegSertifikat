@@ -129,6 +129,115 @@
             100% { transform: translateX(-100%); }
         }
         #report-print-heading { display: none; }
+        @media (max-width: 640px) {
+            html {
+                overflow-x: hidden;
+            }
+            #app > header {
+                flex-wrap: wrap;
+                gap: 0.75rem;
+                padding: 0.75rem;
+            }
+            #app > header > div:first-child {
+                min-width: 0;
+                flex: 1 1 100%;
+            }
+            #nav-actions {
+                width: 100%;
+                justify-content: flex-end;
+                gap: 0.5rem;
+            }
+            #nav-actions a,
+            #nav-actions button {
+                min-height: 44px;
+                padding-left: 0.75rem;
+                padding-right: 0.75rem;
+            }
+            #toast-container {
+                left: 0.75rem;
+                right: 0.75rem;
+                top: 0.75rem;
+                width: auto;
+                max-width: calc(100vw - 1.5rem);
+                box-sizing: border-box;
+            }
+            #toast-container > div {
+                max-width: 100%;
+            }
+            #running-text-banner {
+                align-items: flex-start;
+                padding: 0.5rem 0.75rem;
+            }
+            #running-text-banner > div:first-child {
+                margin-right: 0.5rem;
+                white-space: normal;
+                text-align: center;
+            }
+            main.container {
+                padding: 1.25rem 0.75rem;
+            }
+            #view-home > .glass-card:first-child {
+                padding: 1.25rem 1rem;
+                border-radius: 1.25rem;
+            }
+            #auth-section,
+            #view-home .lg\:col-span-2 {
+                padding: 1rem;
+                border-radius: 1.25rem;
+            }
+            #user-welcome-name {
+                overflow-wrap: anywhere;
+            }
+            #view-user-dashboard > .glass-card:first-child > div:first-child > div:first-child,
+            #view-admin-dashboard > .glass-card:first-child > div:first-child > div:first-child {
+                flex-wrap: wrap;
+            }
+            #view-user-dashboard > .glass-card:first-child > div:last-child {
+                justify-content: flex-start;
+            }
+            #view-admin-dashboard > .glass-card:first-child {
+                padding: 1rem;
+            }
+            #view-admin-dashboard > .glass-card:first-child > div:last-child {
+                width: 100%;
+            }
+            #view-admin-dashboard > .glass-card:first-child > div:last-child > * {
+                flex: 1 1 auto;
+                justify-content: center;
+            }
+            #adm-content-monitoring table,
+            #adm-content-master table,
+            #adm-content-units table,
+            #report-table {
+                min-width: 680px;
+            }
+            #modal-upload > .glass-modal,
+            #modal-admin-login > .glass-modal,
+            #modal-participant-detail > .glass-modal,
+            #modal-announcement > .glass-modal,
+            #modal-unit > .glass-modal,
+            #modal-employee > .glass-modal {
+                max-height: calc(100vh - 2rem);
+                max-height: calc(100dvh - 2rem);
+                overflow-y: auto;
+                overscroll-behavior: contain;
+                padding: 1rem;
+                border-radius: 1.25rem;
+            }
+            #modal-announcement-preview > div {
+                height: 90vh;
+                height: 90dvh;
+            }
+            form input:not([type="file"]):not([type="hidden"]),
+            form select,
+            form textarea {
+                font-size: 16px;
+            }
+            .glass-card {
+                backdrop-filter: blur(14px);
+                -webkit-backdrop-filter: blur(14px);
+            }
+        }
         @media print {
             @page { size: landscape; margin: 12mm; }
             body.printing-report { background: #fff !important; color: #111827 !important; overflow: visible !important; }
@@ -150,7 +259,7 @@
             body.printing-report #report-print-heading h2 { font-size: 12pt; font-weight: 700; margin-top: 5px; }
             body.printing-report #report-print-heading p { font-size: 9pt; margin-top: 4px; }
             body.printing-report #report-table-wrapper { overflow: visible !important; }
-            body.printing-report #report-table { width: 100%; border-collapse: collapse; font-size: 9pt; }
+            body.printing-report #report-table { width: 100%; min-width: 0 !important; border-collapse: collapse; font-size: 9pt; }
             body.printing-report #report-table th,
             body.printing-report #report-table td { border: 1px solid #374151 !important; padding: 6px 8px !important; color: #111827 !important; vertical-align: top; }
             body.printing-report #report-table th { background: #e5e7eb !important; font-weight: 700; text-align: center; }
@@ -183,9 +292,9 @@
                     <p class="text-[10px] md:text-xs font-medium text-slate-600">Sistem Pengumpulan Berkas Keahlian & Kegiatan</p>
                 </div>
             </div>
-            <div id="nav-actions" class="flex items-center space-x-3">
+            <div id="nav-actions" class="flex flex-wrap items-center justify-end gap-2">
                 <a href="https://script.google.com/a/macros/ar-raniry.ac.id/s/AKfycbwOEvCwQXpWGmiJZLSkBC3ldNsAmty5EkGXakXH-4OkDb7RyIL9nGRVmRI_nCreZY1llw/exec" target="_blank" rel="noopener noreferrer" class="px-3 md:px-4 py-2 text-[10px] md:text-xs font-bold uppercase tracking-wider text-white bg-uin-secondary hover:bg-uin-primary border border-uin-primary/30 rounded-xl transition-all shadow-sm whitespace-nowrap">
-                    <i class="fa-solid fa-arrow-up-right-from-square mr-1.5"></i> Layanan Pengusulan Jabatan Akademik Dosen
+                    <i class="fa-solid fa-arrow-up-right-from-square mr-1.5"></i> LAYANAN JAD
                 </a>
                 <button onclick="openAdminLoginModal()" class="px-3 md:px-4 py-2 text-[10px] md:text-xs font-bold uppercase tracking-wider text-uin-primary bg-white/80 hover:bg-uin-primary hover:text-white border border-uin-primary/30 rounded-xl transition-all shadow-sm">
                     <i class="fa-solid fa-shield-halved mr-1.5"></i> Login Admin
@@ -761,7 +870,7 @@
                     <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Peran yang Tercantum pada Sertifikat</label>
                     <input type="text" id="upload-peran" required maxlength="150" placeholder="Contoh: Narasumber / Pemateri / Moderator / Peserta" class="w-full px-4 py-3 rounded-xl bg-white/60 border border-slate-200 text-sm focus:ring-2 focus:ring-uin-primary">
                 </div>
-                <div class="grid grid-cols-2 gap-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                         <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Tingkatan</label>
                         <select id="upload-tingkat" class="w-full px-4 py-3 rounded-xl bg-white/60 border border-slate-200 text-sm focus:ring-2 focus:ring-uin-primary">
@@ -944,7 +1053,7 @@
                     <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Nama Lengkap & Gelar</label>
                     <input type="text" id="emp-nama" required class="w-full px-3 py-2.5 rounded-xl bg-white/60 border border-slate-200 text-sm">
                 </div>
-                <div class="grid grid-cols-2 gap-3">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
                         <label class="block text-xs font-bold text-slate-700 uppercase mb-1">WhatsApp</label>
                         <input type="text" id="emp-wa" required class="w-full px-3 py-2.5 rounded-xl bg-white/60 border border-slate-200 text-sm">
@@ -954,7 +1063,7 @@
                         <input type="email" id="emp-email" required class="w-full px-3 py-2.5 rounded-xl bg-white/60 border border-slate-200 text-sm">
                     </div>
                 </div>
-                <div class="grid grid-cols-2 gap-3">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
                         <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Jabatan</label>
                         <input type="text" id="emp-jabatan" required class="w-full px-3 py-2.5 rounded-xl bg-white/60 border border-slate-200 text-sm">
